@@ -87,6 +87,7 @@ export class FirstPersonController {
         const sin = Math.sin(this.yaw);
         const forward = [-sin, 0, -cos];
         const right = [cos, 0, -sin];
+        const up = [0, 1, 0];
 
         // Map user input to the acceleration vector.
         const acc = vec3.create();
@@ -101,6 +102,12 @@ export class FirstPersonController {
         }
         if (this.keys['KeyA']) {
             vec3.sub(acc, acc, right);
+        }        
+        if (this.keys['KeyE']) {
+            vec3.add(acc, acc, up);
+        }
+        if (this.keys['KeyQ']) {
+            vec3.sub(acc, acc, up);
         }
 
         // Update velocity based on acceleration (first line of Euler's method).
