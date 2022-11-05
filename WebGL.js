@@ -131,10 +131,6 @@ export class WebGL {
         return texture;
     }
 
-    // ------------------------------------------------
-    // UNUSED -----------------------------------------
-    // ------------------------------------------------
-
     static createBuffer(gl, {
         buffer = gl.createBuffer(),
         target = gl.ARRAY_BUFFER,
@@ -147,23 +143,6 @@ export class WebGL {
         return buffer;
     }
 
-    static createUnitQuad(gl) {
-        return WebGL.createBuffer(gl, { data: new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]) });
-    }
-
-    static createClipQuad(gl) {
-        return WebGL.createBuffer(gl, { data: new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]) });
-    }
-
-    static configureAttribute(gl, {
-        location, count, type,
-        normalize = false,
-        stride = 0, offset = 0,
-    }) {
-        gl.enableVertexAttribArray(location);
-        gl.vertexAttribPointer(location, count, type, normalize, stride, offset);
-    }
-
     static createSampler(gl, {
         sampler = gl.createSampler(),
         wrapS, wrapT, min, mag,
@@ -174,5 +153,26 @@ export class WebGL {
         if (mag) { gl.samplerParameteri(sampler, gl.TEXTURE_MAG_FILTER, mag); }
 
         return sampler;
+    }
+
+    //--------------------------------------
+    // unused ------------------------------
+    //--------------------------------------
+
+    static configureAttribute(gl, {
+        location, count, type,
+        normalize = false,
+        stride = 0, offset = 0,
+    }) {
+        gl.enableVertexAttribArray(location);
+        gl.vertexAttribPointer(location, count, type, normalize, stride, offset);
+    }
+    
+    static createUnitQuad(gl) {
+        return WebGL.createBuffer(gl, { data: new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]) });
+    }
+
+    static createClipQuad(gl) {
+        return WebGL.createBuffer(gl, { data: new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]) });
     }
 }

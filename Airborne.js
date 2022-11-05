@@ -1,19 +1,20 @@
 import { GUI } from './lib/dat.gui.module.js'
 import { mat2, mat4 } from './lib/gl-matrix-module.js';
 import { Application } from './Application.js'
-import { Node } from './Node.js';
 import { Renderer } from './Renderer.js';
-import { Material } from './Material.js';
+import { Node } from './Node.js';
 import { FirstPersonController } from './FirstPersonController.js';
+import { Material } from './Material.js';
+import { GLTFLoader } from './GLTFLoader.js';
 
 class Airborne extends Application {
-    // called before requseting first animation frame (before game loop starts)
+    
     async start() {
         this.time = performance.now();
         this.startTime = this.time;
         const gl = this.gl;
-        this.renderer = new Renderer(gl);
-        // loading models and textures
+        this.renderer = new Renderer(this.gl);
+
         const [cube, funky, floor, texture, envmap, grass, crate] = await Promise.all([
             this.renderer.loadModel('./res/cube/cube.json'),
             this.renderer.loadModel('./res/funky/funky.json'),
@@ -39,6 +40,12 @@ class Airborne extends Application {
             }),
         ]);
 
+        this.loader = new GLTFLoader(envmap);
+        await this.loader.load('../res/letalo/letalo.gltf');
+        this.scene = await this.loader.loadScene(this.loader.defaultScene);
+        if (!this.scene) throw new Error('Scene not present in glTF');
+        this.renderer.prepareScene(this.scene);
+        
         this.root = new Node();        
         // camera
         this.camera = new Node();
@@ -56,7 +63,7 @@ class Airborne extends Application {
         // sky box
         this.skybox = new Node();
         this.skybox.model = cube;
-        this.skybox.material = new Material(envmap);
+        this.skybox.material = new Material({}, envmap);
         // objects        
         this.funky = new Node();
         this.cube1 = new Node();
@@ -70,27 +77,30 @@ class Airborne extends Application {
         this.cube2.addChild(this.cube3);
 
         this.funky.model = funky;
-        this.funky.material = new Material(envmap);
+        this.funky.material = new Material({}, envmap);
         this.funky.material.texture = texture;
 
         this.floor.scale = [10, 1, 10];
         this.floor.model = floor;
-        this.floor.material = new Material(envmap);
+        this.floor.material = new Material({}, envmap);
         this.floor.material.texture = grass;
         this.cube1.model = cube;
-        this.cube1.material = new Material(envmap);
+        this.cube1.material = new Material({}, envmap);
         this.cube1.material.texture = texture;
         this.cube2.model = cube;
-        this.cube2.material = new Material(envmap);
+        this.cube2.material = new Material({}, envmap);
         this.cube2.material.texture = crate
         this.cube3.model = cube;
-        this.cube3.material = new Material(envmap);
+        this.cube3.material = new Material({}, envmap);
         this.cube3.material.texture = crate;
         // variables
         this.leftRotation = 0;
         this.rightRotation = 0;
+
+        this.scene.addNode(this.root)
+        console.log(this.scene)
     }
-    // update everything
+
     update() {
         this.time = performance.now(); // get current time in millisecondes (with fractions)
         const dt = (this.time - this.startTime) * 0.001; // change of time between updates in seconde
@@ -114,12 +124,13 @@ class Airborne extends Application {
         mat4.rotateY(t3, t3, 1);
         this.cube3.localMatrix = t3
     }
-    // render everything
+    
     render() {
-        this.renderer.render(this.root, this.camera, this.light, this.skybox);
+        if (this.renderer) {
+            this.renderer.render(this.scene, this.camera, this.light, this.skybox);
+        }
     }
 
-    // called if resized
     resize() { 
         const w = this.canvas.clientWidth;
         const h = this.canvas.clientHeight;
