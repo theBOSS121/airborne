@@ -131,6 +131,10 @@ export class WebGL {
         return texture;
     }
 
+    // ------------------------------------------------
+    // UNUSED -----------------------------------------
+    // ------------------------------------------------
+
     static createBuffer(gl, {
         buffer = gl.createBuffer(),
         target = gl.ARRAY_BUFFER,

@@ -3,25 +3,13 @@ import { vec3, mat4, quat } from '../../lib/gl-matrix-module.js';
 export class Node {
 
     constructor(options = {}) {
-        this._translation = options.translation
-            ? vec3.clone(options.translation)
-            : vec3.fromValues(0, 0, 0);
-        this._rotation = options.rotation
-            ? quat.clone(options.rotation)
-            : quat.fromValues(0, 0, 0, 1);
-        this._scale = options.scale
-            ? vec3.clone(options.scale)
-            : vec3.fromValues(1, 1, 1);
-        this._matrix = options.matrix
-            ? mat4.clone(options.matrix)
-            : mat4.create();
+        this._translation = options.translation ? vec3.clone(options.translation) : vec3.fromValues(0, 0, 0);
+        this._rotation = options.rotation ? quat.clone(options.rotation) : quat.fromValues(0, 0, 0, 1);
+        this._scale = options.scale ? vec3.clone(options.scale) : vec3.fromValues(1, 1, 1);
+        this._matrix = options.matrix ? mat4.clone(options.matrix) : mat4.create();
 
-
-        if (options.matrix) {
-            this.updateTransformationComponents();
-        } else if (options.translation || options.rotation || options.scale) {
-            this.updateTransformationMatrix();
-        }
+        if (options.matrix) this.updateTransformationComponents();
+        else if (options.translation || options.rotation || options.scale) this.updateTransformationMatrix();
 
         this.transformationMatrixNeedsUpdate = false;
         this.transformationComponentsNeedUpdate = false;
@@ -40,69 +28,50 @@ export class Node {
         mat4.getRotation(this._rotation, this._matrix);
         mat4.getTranslation(this._translation, this._matrix);
         mat4.getScaling(this._scale, this._matrix);
-
         this.transformationComponentsNeedUpdate = false;
     }
 
     updateTransformationMatrix() {
-        mat4.fromRotationTranslationScale(
-            this._matrix,
-            this._rotation,
-            this._translation,
-            this._scale);
-
+        // Creates a matrix from a quaternion rotation, vector translation and vector scale
+        mat4.fromRotationTranslationScale(this._matrix, this._rotation, this._translation, this._scale);
         this.transformationMatrixNeedsUpdate = false;
     }
 
     get translation() {
-        if (this.transformationComponentsNeedUpdate) {
-            this.updateTransformationComponents();
-        }
+        if (this.transformationComponentsNeedUpdate) this.updateTransformationComponents();
         return vec3.clone(this._translation);
     }
-
-    set translation(translation) {
-        if (this.transformationComponentsNeedUpdate) {
-            this.updateTransformationComponents();
-        }
-        this._translation = vec3.clone(translation);
-        this.transformationMatrixNeedsUpdate = true;
-    }
-
+    
     get rotation() {
-        if (this.transformationComponentsNeedUpdate) {
-            this.updateTransformationComponents();
-        }
+        if (this.transformationComponentsNeedUpdate) this.updateTransformationComponents();
         return quat.clone(this._rotation);
     }
 
-    set rotation(rotation) {
-        if (this.transformationComponentsNeedUpdate) {
-            this.updateTransformationComponents();
-        }
-        this._rotation = quat.clone(rotation);
-        this.transformationMatrixNeedsUpdate = true;
-    }
-
     get scale() {
-        if (this.transformationComponentsNeedUpdate) {
-            this.updateTransformationComponents();
-        }
+        if (this.transformationComponentsNeedUpdate) this.updateTransformationComponents();
         return vec3.clone(this._scale);
     }
 
+    set translation(translation) {
+        if (this.transformationComponentsNeedUpdate) this.updateTransformationComponents();
+        this._translation = vec3.clone(translation);
+        this.transformationMatrixNeedsUpdate = true;
+    }    
+
+    set rotation(rotation) {
+        if (this.transformationComponentsNeedUpdate) this.updateTransformationComponents();
+        this._rotation = quat.clone(rotation);
+        this.transformationMatrixNeedsUpdate = true;
+    }    
+
     set scale(scale) {
-        if (this.transformationComponentsNeedUpdate) {
-            this.updateTransformationComponents();
-        }
+        if (this.transformationComponentsNeedUpdate) this.updateTransformationComponents();
         this._scale = vec3.clone(scale);
         this.transformationMatrixNeedsUpdate = true;
     }
 
     get localMatrix() {
-        if (this.transformationMatrixNeedsUpdate) {
-            this.updateTransformationMatrix();
-        }
+        if (this.transformationMatrixNeedsUpdate) this.updateTransformationMatrix();
         return mat4.clone(this._matrix);
     }
 
@@ -111,7 +80,7 @@ export class Node {
         this.transformationComponentsNeedUpdate = true;
         this.transformationMatrixNeedsUpdate = false;
     }
-
+    
     get globalMatrix() {
         if (this.parent) {
             const globalMatrix = this.parent.globalMatrix;
@@ -125,7 +94,6 @@ export class Node {
         if (node.parent) {
             node.parent.removeChild(node);
         }
-
         this.children.push(node);
         node.parent = this;
     }
@@ -137,17 +105,12 @@ export class Node {
             node.parent = null;
         }
     }
-
+    // call before => traverse through all children (recursively) => call after
     traverse(before, after) {
-        if (before) {
-            before(this);
-        }
+        if (before) before(this);
         for (const child of this.children) {
             child.traverse(before, after);
         }
-        if (after) {
-            after(this);
-        }
+        if (after) after(this);
     }
-
 }

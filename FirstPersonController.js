@@ -5,37 +5,27 @@ export class FirstPersonController {
     constructor(node, domElement) {
         // The node that this controller controls.
         this.node = node;
-
         // The activation DOM element.
         this.domElement = domElement;
-
         // This map is going to hold the pressed state for every key.
         this.keys = {};
-
         // We are going to use Euler angles for rotation.
         this.pitch = 0;
         this.yaw = 0;
-
         // This is going to be a simple decay-based model, where
         // the user input is used as acceleration. The acceleration
         // is used to update velocity, which is in turn used to update
         // translation. If there is no user input, speed will decay.
         this.velocity = [0, 0, 0];
-
         // The model needs some limits and parameters.
-
-        // Acceleration in meters per second squared.
+        // Acceleration in units per second squared.
         this.acceleration = 20;
-
-        // Maximum speed in meters per second.
+        // Maximum speed in units per second.
         this.maxSpeed = 3;
-
         // Decay as 1 - log percent max speed loss per second.
         this.decay = 0.9;
-
         // Pointer sensitivity in radians per pixel.
         this.pointerSensitivity = 0.002;
-
         this.initHandlers();
     }
 
@@ -61,77 +51,42 @@ export class FirstPersonController {
     }
 
     update(dt) {
-        // We are essentially solving the system of differential equations
-        //
-        //   a = dv/dt
-        //   v = dx/dt
-        //
-        // where a is acceleration, v is speed and x is translation.
+        // a is acceleration, v is speed and x is translation.
+        // a = dv/dt
+        // v = dx/dt
         // The system can be sufficiently solved with Euler's method:
-        //
-        //   v(t + dt) = v(t) + a(t) * dt
-        //   x(t + dt) = x(t) + v(t) * dt
-        //
+        // v(t + dt) = v(t) + a(t) * dt
+        // x(t + dt) = x(t) + v(t) * dt
         // which can be implemented as
-        //
-        //   v += a * dt
-        //   x += v * dt
-        //
-        // Needless to say, better methods exist. Specifically, second order
-        // methods accurately compute the solution to our second order system,
-        // whereas there is always going to be some error related to the
-        // exponential decay.
+        // v += a * dt
+        // x += v * dt
 
-        // Calculate forward and right vectors from the y-orientation.
+        // Calculate forward, right, up vectors from the y-orientation.
         const cos = Math.cos(this.yaw);
         const sin = Math.sin(this.yaw);
         const forward = [-sin, 0, -cos];
         const right = [cos, 0, -sin];
         const up = [0, 1, 0];
-
         // Map user input to the acceleration vector.
         const acc = vec3.create();
-        if (this.keys['KeyW']) {
-            vec3.add(acc, acc, forward);
-        }
-        if (this.keys['KeyS']) {
-            vec3.sub(acc, acc, forward);
-        }
-        if (this.keys['KeyD']) {
-            vec3.add(acc, acc, right);
-        }
-        if (this.keys['KeyA']) {
-            vec3.sub(acc, acc, right);
-        }        
-        if (this.keys['KeyE']) {
-            vec3.add(acc, acc, up);
-        }
-        if (this.keys['KeyQ']) {
-            vec3.sub(acc, acc, up);
-        }
-
+        if (this.keys['KeyW']) vec3.add(acc, acc, forward);
+        if (this.keys['KeyS']) vec3.sub(acc, acc, forward);
+        if (this.keys['KeyD']) vec3.add(acc, acc, right);
+        if (this.keys['KeyA']) vec3.sub(acc, acc, right);
+        if (this.keys['KeyE']) vec3.add(acc, acc, up);
+        if (this.keys['KeyQ']) vec3.sub(acc, acc, up);
         // Update velocity based on acceleration (first line of Euler's method).
         vec3.scaleAndAdd(this.velocity, this.velocity, acc, dt * this.acceleration);
-
         // If there is no user input, apply decay.
-        if (!this.keys['KeyW'] &&
-            !this.keys['KeyS'] &&
-            !this.keys['KeyD'] &&
-            !this.keys['KeyA'])
-        {
+        if (!this.keys['KeyW'] && !this.keys['KeyS'] && !this.keys['KeyD'] && !this.keys['KeyA']) {
             const decay = Math.exp(dt * Math.log(1 - this.decay));
             vec3.scale(this.velocity, this.velocity, decay);
         }
-
         // Limit speed to prevent accelerating to infinity and beyond.
         const speed = vec3.length(this.velocity);
-        if (speed > this.maxSpeed) {
-            vec3.scale(this.velocity, this.velocity, this.maxSpeed / speed);
-        }
-
+        if (speed > this.maxSpeed) vec3.scale(this.velocity, this.velocity, this.maxSpeed / speed);
         // Update translation based on velocity (second line of Euler's method).
-        this.node.translation = vec3.scaleAndAdd(vec3.create(),
-            this.node.translation, this.velocity, dt);
+        this.node.translation = vec3.scaleAndAdd(vec3.create(), this.node.translation, this.velocity, dt);
 
         // Update rotation based on the Euler angles.
         const rotation = quat.create();
@@ -141,39 +96,20 @@ export class FirstPersonController {
     }
 
     pointermoveHandler(e) {
-        // Rotation can be updated through the pointermove handler.
-        // Given that pointermove is only called under pointer lock,
-        // movementX/Y will be available.
-
         // Horizontal pointer movement causes camera panning (y-rotation),
         // vertical pointer movement causes camera tilting (x-rotation).
         const dx = e.movementX;
         const dy = e.movementY;
         this.pitch -= dy * this.pointerSensitivity;
         this.yaw   -= dx * this.pointerSensitivity;
-
-        const pi = Math.PI;
-        const twopi = pi * 2;
-        const halfpi = pi / 2;
-
         // Limit pitch so that the camera does not invert on itself.
-        if (this.pitch > halfpi) {
-            this.pitch = halfpi;
-        }
-        if (this.pitch < -halfpi) {
-            this.pitch = -halfpi;
-        }
-
+        if (this.pitch > Math.PI / 2) this.pitch = Math.PI / 2;
+        if (this.pitch < -Math.PI / 2) this.pitch = -Math.PI / 2;
         // Constrain yaw to the range [0, pi * 2]
-        this.yaw = ((this.yaw % twopi) + twopi) % twopi;
+        this.yaw = this.yaw % (Math.PI * 2);
     }
-
-    keydownHandler(e) {
-        this.keys[e.code] = true;
-    }
-
-    keyupHandler(e) {
-        this.keys[e.code] = false;
-    }
+    // set this.keys[e.code] when key up/down to true/false
+    keydownHandler(e) { this.keys[e.code] = true; }
+    keyupHandler(e) { this.keys[e.code] = false; }
 
 }

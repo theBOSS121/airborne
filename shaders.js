@@ -59,53 +59,63 @@ vec2 directionToTexcoord(vec3 v) {
 }
 
 void main() {
-    vec3 surfacePosition = vPosition;
-
-    float d = distance(surfacePosition, uLight.position);
+    float d = distance(vPosition, uLight.position);
+    // further from the light it should be darker 1/ (2nd degree polinomial in distance to the light)
     float attenuation = 1.0 / dot(uLight.attenuation, vec3(1, d, d * d));
 
-    vec3 N = normalize(vNormal);
-    vec3 L = normalize(uLight.position - surfacePosition);
-    vec3 E = normalize(uCameraPosition - surfacePosition);
-    vec3 R = normalize(reflect(-L, N));
-    vec3 R2 = reflect(-E, N);
-    vec3 T = refract(-E, N, uIOR);
+    vec3 N = normalize(vNormal); // fragment normal
+    vec3 L = normalize(uLight.position - vPosition); // vec from fragment to light
+    vec3 E = normalize(uCameraPosition - vPosition); // vec from fragment to camera
+    vec3 R = normalize(reflect(-L, N)); // vec reflected from light over the normal
+    vec3 R2 = reflect(-E, N); // vec reflected from camera over the normal
+    vec3 T = refract(-E, N, uIOR); // vec refracted from camera over normal with uIOR
 
     // lights
+    // diffuse light effected by cos(angle between normal and light)
     float lambert = max(0.0, dot(L, N)) * uMaterial.diffuse;
+    // cos(angle between camera and light reflection (over normal))^shininess * specular
+    // for specular light
     float phong = pow(max(0.0, dot(E, R)), uMaterial.shininess) * uMaterial.specular;
-
-    vec3 diffuseLight = lambert * attenuation * uLight.color;
-    vec3 specularLight = phong * attenuation * uLight.color;
+    // diffuseLight is depended on materialDiffuseColor (lambert), light color (uLight) and attenuation
+    vec3 diffuseLight = lambert * uLight.color * attenuation;
+    // specularLight is depended on materialSpecularColor (phong), light color (uLight) and attenuation
+    vec3 specularLight = phong * uLight.color * attenuation;
 
     const float gamma = 2.2;
+    // get texture color for fragment and power it to the gamma (albedo)
     vec3 albedo = pow(texture(uTexture, vTexCoord).rgb, vec3(gamma));
+    // color = albedo * max(diffuseLight, ambientLight) + specularLight
     vec3 finalColor = albedo * max(diffuseLight, vec3(0.005,0.005,0.005)) + specularLight;
 
     // oColor = pow(vec4(finalColor, 1), vec4(1.0 / gamma));
     
     // reflections / transparency
+    // get surface color
     vec4 surfaceColor = texture(uTexture, vTexCoord);
+    // get reflectedColor from environment map
     vec4 reflectedColor = texture(uEnvmap, directionToTexcoord(R2));
+    // get refractedColor from environment map
     vec4 refractedColor = texture(uEnvmap, directionToTexcoord(T));
 
+    // mixing reflection/refration to the surface using (uReflectance/uTransmittance)
     vec4 reflection = mix(surfaceColor, reflectedColor, uReflectance);
     vec4 refraction = mix(surfaceColor, refractedColor, uTransmittance);
 
     // oColor = mix(reflection, refraction, uEffect);
 
-    
-    oColor = 0.5 * pow(vec4(finalColor, 1), vec4(1.0 / gamma)) + 0.5 * mix(reflection, refraction, uEffect); // TODO: maybe not a good color mixture
+    // mixing color from lights and reflection/refration
+    // TODO: maybe not a good color mixture
+    oColor = 0.5 * pow(vec4(finalColor, 1), vec4(1.0 / gamma)) + 0.5 * mix(reflection, refraction, uEffect); 
 }
 `;
 
 const skyboxVertex = `#version 300 es
-layout (location = 0) in vec3 aPosition;
+layout (location = 0) in vec3 aPosition; // vertex position
 
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 
-out vec3 vPosition;
+out vec3 vPosition; // vertex position not transformed
 
 void main() {
     vPosition = aPosition;
@@ -130,6 +140,7 @@ vec2 directionToTexcoord(vec3 v) {
 }
 
 void main() {
+    // color from environment in the direction of (not transformed but interpolated vPosition)
     oColor = texture(uEnvmap, directionToTexcoord(normalize(vPosition)));
 }
 `;
@@ -143,19 +154,13 @@ export const shaders = {
         vertex: skyboxVertex,
         fragment: skyboxFragment,
     },
-    // perVertex: {
-    //     vertex: perVertexVertexShader,
-    //     fragment: perVertexFragmentShader,
-    // },
-    // perFragment: {
-    //     vertex: perFragmentVertexShader,
-    //     fragment: perFragmentFragmentShader,
-    // },
-    // envmap: {
-    //     vertex: envmapVertex,
-    //     fragment: envmapFragment,
-    // },
 };
+
+// --------------------------------------------------------------
+// --------------------------------------------------------------
+// Examples of shaders ------------------------------------------
+// --------------------------------------------------------------
+// --------------------------------------------------------------
 
 // const envmapVertex = `#version 300 es
 // layout (location = 0) in vec3 aPosition;

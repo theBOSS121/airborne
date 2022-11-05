@@ -7,34 +7,34 @@ export class Renderer {
     constructor(gl) {
         this.gl = gl;
 
-        gl.clearColor(1, 1, 1, 1);
-        gl.enable(gl.DEPTH_TEST);
+        gl.clearColor(1, 1, 1, 1); // set clear color to white
+        gl.enable(gl.DEPTH_TEST); // enable depth test: draw pixels if they are closer to the camera
         gl.enable(gl.CULL_FACE);
 
-        this.programs = WebGL.buildPrograms(gl, shaders);
-        this.currentProgram = this.programs.perFragmentWithEnvmap;
-        this.perFragment = false;
+        this.programs = WebGL.buildPrograms(gl, shaders); // get all programs (shaders)
+        this.currentProgram = this.programs.perFragmentWithEnvmap; // set currentProgram
     }
 
     render(scene, camera, light, skybox) {
         const gl = this.gl;
 
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear color and depth buffers
 
-        const { program, uniforms } = this.currentProgram;
+        const { program, uniforms } = this.currentProgram; // get shader and uniforms from current program
+        // set shader
         gl.useProgram(program);
-
+        // set uniforms
         const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
         gl.uniform3fv(uniforms.uCameraPosition, mat4.getTranslation(vec3.create(), camera.globalMatrix));
-
         gl.uniform3fv(uniforms.uLight.color, vec3.scale(vec3.create(), light.color, light.intensity / 255));
         gl.uniform3fv(uniforms.uLight.position, mat4.getTranslation(vec3.create(), light.globalMatrix));
         gl.uniform3fv(uniforms.uLight.attenuation, light.attenuation);
-
+        // render scene
         this.renderNode(scene, scene.globalMatrix);
+        // render Skybox / environment
         this.renderSkybox(skybox, camera);
     }
 
@@ -42,115 +42,62 @@ export class Renderer {
         const gl = this.gl;
 
         modelMatrix = mat4.clone(modelMatrix);
-        mat4.mul(modelMatrix, modelMatrix, node.localMatrix);
-
+        // multiply modelMatrix with localMatrix (children matrix is influenced be parent matrix)
+        mat4.mul(modelMatrix, modelMatrix, node.localMatrix); 
+        // get uniforms for current program
         const { uniforms } = this.currentProgram;
-
+        // node has a model and material render it
         if (node.model && node.material) {
             gl.bindVertexArray(node.model.vao);
-
-            gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
-
+            // set model texture and uniform
             gl.activeTexture(gl.TEXTURE0);
-            gl.uniform1i(uniforms.uTexture, 0);
             gl.bindTexture(gl.TEXTURE_2D, node.material.texture);
-
+            gl.uniform1i(uniforms.uTexture, 0);
+            // set envorionment texture and uniform
             gl.activeTexture(gl.TEXTURE1);
-            gl.uniform1i(uniforms.uEnvmap, 1);
             gl.bindTexture(gl.TEXTURE_2D, node.material.envmap);
-
+            gl.uniform1i(uniforms.uEnvmap, 1);
+            // set modelMatrix uniform
+            gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
+            // set material uniforms for material reflection/refration
             gl.uniform1f(uniforms.uReflectance, node.material.reflectance);
             gl.uniform1f(uniforms.uTransmittance, node.material.transmittance);
             gl.uniform1f(uniforms.uIOR, node.material.ior);
             gl.uniform1f(uniforms.uEffect, node.material.effect);
-
+            // set material uniforms for diffuse/specular light
             gl.uniform1f(uniforms.uMaterial.diffuse, node.material.diffuse);
             gl.uniform1f(uniforms.uMaterial.specular, node.material.specular);
             gl.uniform1f(uniforms.uMaterial.shininess, node.material.shininess);
-
+            // draw model
             gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
         }
-
+        // render all nodes children
         for (const child of node.children) {
             this.renderNode(child, modelMatrix);
         }
     }
 
-    // envmap example
-    // render(scene, camera, skybox) {
-    //     const gl = this.gl;
-
-    //     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    //     const { program, uniforms } = this.programs.envmap;
-    //     gl.useProgram(program);
-
-    //     const viewMatrix = camera.globalMatrix;
-    //     mat4.invert(viewMatrix, viewMatrix);
-    //     gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
-    //     gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
-    //     gl.uniform3fv(uniforms.uCameraPosition, mat4.getTranslation(vec3.create(), camera.globalMatrix));
-
-    //     this.renderNode(scene, scene.globalMatrix);
-    //     this.renderSkybox(skybox, camera);
-    // }
-
-    // renderNode(node, modelMatrix) {
-    //     const gl = this.gl;
-
-    //     modelMatrix = mat4.clone(modelMatrix);
-    //     mat4.mul(modelMatrix, modelMatrix, node.localMatrix);
-
-    //     const { uniforms } = this.programs.envmap;
-
-    //     if (node.model && node.material) {
-    //         gl.bindVertexArray(node.model.vao);
-
-    //         gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
-
-    //         gl.activeTexture(gl.TEXTURE0);
-    //         gl.uniform1i(uniforms.uTexture, 0);
-    //         gl.bindTexture(gl.TEXTURE_2D, node.material.texture);
-
-    //         gl.activeTexture(gl.TEXTURE1);
-    //         gl.uniform1i(uniforms.uEnvmap, 1);
-    //         gl.bindTexture(gl.TEXTURE_2D, node.material.envmap);
-
-    //         gl.uniform1f(uniforms.uReflectance, node.material.reflectance);
-    //         gl.uniform1f(uniforms.uTransmittance, node.material.transmittance);
-    //         gl.uniform1f(uniforms.uIOR, node.material.ior);
-    //         gl.uniform1f(uniforms.uEffect, node.material.effect);
-
-    //         gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
-    //     }
-
-    //     for (const child of node.children) {
-    //         this.renderNode(child, modelMatrix);
-    //     }
-    // }
-
     renderSkybox(skybox, camera) {
         const gl = this.gl;
-
+        // get shader program and uniforms for skybox shader
         const { program, uniforms } = this.programs.skybox;
-        gl.useProgram(program);
-
+        gl.useProgram(program); // use skybox shader program
+        gl.bindVertexArray(skybox.model.vao);
+        // set camera uniforms
         const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
-
-        gl.bindVertexArray(skybox.model.vao);
-
+        // set environment texture and uniform
         gl.activeTexture(gl.TEXTURE1);
         gl.uniform1i(uniforms.uEnvmap, 1);
         gl.bindTexture(gl.TEXTURE_2D, skybox.material.envmap);
-
-        gl.depthFunc(gl.LEQUAL);
-        gl.disable(gl.CULL_FACE);
-        gl.drawElements(gl.TRIANGLES, skybox.model.indices, gl.UNSIGNED_SHORT, 0);
-        gl.enable(gl.CULL_FACE);
-        gl.depthFunc(gl.LESS);
+        
+        gl.depthFunc(gl.LEQUAL); // pass through if <= depth buffer value
+        gl.disable(gl.CULL_FACE); // disable CULL_FACE
+        gl.drawElements(gl.TRIANGLES, skybox.model.indices, gl.UNSIGNED_SHORT, 0); // draw skybox
+        gl.enable(gl.CULL_FACE); // unset/enable CULL_FACE
+        gl.depthFunc(gl.LESS); // unset depth function to <
     }
 
     createModel(model) {
@@ -180,13 +127,13 @@ export class Renderer {
 
         return { vao, indices };
     }
-
+    // load model
     async loadModel(url) {
         const response = await fetch(url);
         const json = await response.json();
         return this.createModel(json);
     }
-
+    // load texture
     async loadTexture(url, options) {
         const response = await fetch(url);
         const blob = await response.blob();
@@ -194,5 +141,4 @@ export class Renderer {
         const spec = Object.assign({ image }, options);
         return WebGL.createTexture(this.gl, spec);
     }
-
 }
