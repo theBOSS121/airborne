@@ -4,6 +4,7 @@ import { vec3, vec4 } from '../lib/gl-matrix-module.js';
 export class Material {
 
     constructor(options = {}, envmap = {}) {
+        // gltf specific -----------------------------------------------
         this.baseColorTexture = options.baseColorTexture || null;
         this.baseColorTexCoord = options.baseColorTexCoord || 0;
         this.baseColorFactor = options.baseColorFactor
@@ -32,11 +33,8 @@ export class Material {
         this.alphaMode = options.alphaMode || 'OPAQUE';
         this.alphaCutoff = options.alphaCutoff !== undefined ? options.alphaCutoff : 0.5;
         this.doubleSided = options.doubleSided || false;
-        // ----------------------------------------------------
-        // not gltf -------------------------------------------
-        // ----------------------------------------------------
-        // TODO: add to options        
-        // this.texture = null;
+        // not gltf specific ------------------------------------------
+        this.texture = null;
         this.envmap = envmap;
 
         this.diffuse = 1;
@@ -44,8 +42,8 @@ export class Material {
         this.shininess = 50;
 
         this.effect = 0.5;
-        this.reflectance = 0;
-        this.transmittance = 1;
+        this.reflectance = 1;
+        this.transmittance = 0;
         this.ior = 0.95;
 
     }

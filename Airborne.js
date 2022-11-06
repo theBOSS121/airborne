@@ -3,7 +3,7 @@ import { mat2, mat4 } from './lib/gl-matrix-module.js';
 import { Application } from './Application.js'
 import { Renderer } from './Renderer.js';
 import { Node } from './Node.js';
-import { FirstPersonController } from './FirstPersonController.js';
+import { CameraController } from './CameraController.js';
 import { Material } from './Material.js';
 import { GLTFLoader } from './GLTFLoader.js';
 
@@ -24,7 +24,7 @@ class Airborne extends Application {
                 min: gl.NEAREST_MIPMAP_NEAREST,
                 mag: gl.NEAREST,
             }),
-            this.renderer.loadTexture('./res/images/envmap2.jpg', {
+            this.renderer.loadTexture('./res/images/skybox.png', {
                 min: gl.LINEAR,
                 mag: gl.LINEAR,
             }),            
@@ -41,18 +41,28 @@ class Airborne extends Application {
         ]);
 
         this.loader = new GLTFLoader(envmap);
+        await this.loader.load('../res/scena/scena.gltf');
+        this.scene = await this.loader.loadGLTFNodes(this.loader.defaultScene);
+        this.renderer.prepareGLTFNodes(this.scene);
         await this.loader.load('../res/letalo/letalo.gltf');
-        this.scene = await this.loader.loadScene(this.loader.defaultScene);
-        if (!this.scene) throw new Error('Scene not present in glTF');
-        this.renderer.prepareScene(this.scene);
+        this.airplane = await this.loader.loadGLTFNodes(this.loader.defaultScene);
+        this.renderer.prepareGLTFNodes(this.airplane);
+        await this.loader.load('../res/gorivo/gorivo.gltf');
+        this.fuel = await this.loader.loadGLTFNodes(this.loader.defaultScene);
+        this.renderer.prepareGLTFNodes(this.fuel);
+        // if (!this.scene || !this.airplane) throw new Error('Scene not present in glTF');
         
-        this.root = new Node();        
+        this.root = new Node();
+        this.root.addChild(this.scene);
+        this.root.addChild(this.airplane);
+        this.root.addChild(this.fuel);
         // camera
         this.camera = new Node();
-        this.root.addChild(this.camera); 
-        this.cameraController = new FirstPersonController(this.camera, this.canvas);
+        this.root.addChild(this.camera);
         this.camera.projection = mat4.create();
-        this.camera.translation = [0, 2, 8];
+        this.camera.translation = [0, 3, 10];
+        this.camera.eulerRotation = [-Math.PI / 10, 0, 0];
+        this.cameraController = new CameraController(this.camera, this.canvas);
 
         this.light = new Node();
         this.root.addChild(this.light);
@@ -75,6 +85,7 @@ class Airborne extends Application {
         this.root.addChild(this.cube1);
         this.root.addChild(this.cube2);
         this.cube2.addChild(this.cube3);
+        
 
         this.funky.model = funky;
         this.funky.material = new Material({}, envmap);
@@ -96,9 +107,7 @@ class Airborne extends Application {
         // variables
         this.leftRotation = 0;
         this.rightRotation = 0;
-
-        this.scene.addNode(this.root)
-        console.log(this.scene)
+        
     }
 
     update() {
@@ -127,7 +136,7 @@ class Airborne extends Application {
     
     render() {
         if (this.renderer) {
-            this.renderer.render(this.scene, this.camera, this.light, this.skybox);
+            this.renderer.render(this.root, this.camera, this.light, this.skybox);
         }
     }
 
@@ -138,6 +147,7 @@ class Airborne extends Application {
         const fovy = Math.PI / 3;
         const near = 0.1;
         const far = 100;
+        // const far = 1000;
 
         mat4.perspective(this.camera.projection, fovy, aspect, near, far);
     }
@@ -160,13 +170,13 @@ const gui = new GUI()
 
 const light = gui.addFolder('Light');
 light.open();
-light.add(app.light, 'intensity', 0, 5);
+light.add(app.light, 'intensity', 0, 30);
 light.addColor(app.light, 'color');
 const lightPosition = light.addFolder('Position');
 lightPosition.open();
-lightPosition.add(app.light.position, 0, -10, 10).name('x');
-lightPosition.add(app.light.position, 1, -10, 10).name('y');
-lightPosition.add(app.light.position, 2, -10, 10).name('z');
+lightPosition.add(app.light.position, 0, -100, 100).name('x');
+lightPosition.add(app.light.position, 1, -100, 100).name('y');
+lightPosition.add(app.light.position, 2, -100, 100).name('z');
 const lightAttenuation = light.addFolder('Attenuation');
 lightAttenuation.open();
 lightAttenuation.add(app.light.attenuation, 0, 0, 5).name('constant');

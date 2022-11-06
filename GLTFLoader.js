@@ -1,5 +1,5 @@
 import { Material } from './Material.js';
-import { Scene } from './Scene.js';
+import { GLTFNodes } from './GLTFNodes.js';
 import { Node } from './Node.js';
 
 // This class loads all GLTF resources and instantiates
@@ -276,7 +276,7 @@ export class GLTFLoader {
         return node;
     }
 
-    async loadScene(nameOrIndex) {
+    async loadGLTFNodes(nameOrIndex) {
         const gltfSpec = this.findByNameOrIndex(this.gltf.scenes, nameOrIndex);
         if (this.cache.has(gltfSpec)) {
             return this.cache.get(gltfSpec);
@@ -290,7 +290,7 @@ export class GLTFLoader {
             }
         }
 
-        const scene = new Scene(options);
+        const scene = new GLTFNodes(options);
         this.cache.set(gltfSpec, scene);
         return scene;
     }
