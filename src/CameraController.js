@@ -1,5 +1,6 @@
-import { quat, vec3, mat4 } from './lib/gl-matrix-module.js';
+import { quat, vec3, mat4 } from '../lib/gl-matrix-module.js';
 
+// Class that enables Camera control (first/third person view with mouse and wasd[qe])
 export class CameraController {
 
     constructor(node, domElement) {
@@ -50,6 +51,7 @@ export class CameraController {
     }
 
     update(dt) {
+        if(dt == 0) return
         // a is acceleration, v is speed and x is translation.
         // a = dv/dt
         // v = dx/dt

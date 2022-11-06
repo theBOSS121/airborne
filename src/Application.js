@@ -1,3 +1,6 @@
+import { Renderer } from './Renderer.js';
+
+// Abstraction of aplication (Airborne.js extends Aplication class)
 export class Application {
     
     constructor(canvas, glOptions) {
@@ -7,6 +10,10 @@ export class Application {
     }
 
     async init() {
+        this.time = performance.now();
+        this.prevTime = this.time;
+        this.renderer = new Renderer(this.gl);
+
         await this.start(); // init/start game before game loop starts
         requestAnimationFrame(this._update); // start game loop
     }
@@ -16,12 +23,15 @@ export class Application {
         try {
             this.gl = this.canvas.getContext('webgl2', glOptions);
         } catch (error) {}
-        if (!this.gl) console.log('Cannot create WebGL 2.0 context');
+        if (!this.gl) throw Error('Cannot create WebGL 2.0 context');
     }
     // game loop
     _update() {
+        this.time = performance.now(); // get current time in millisecondes (with fractions)
+        const dt = (this.time - this.prevTime) * 0.001; // change of time between updates in seconde
+        this.prevTime = this.time;
         this._resize();
-        this.update();
+        this.update(dt);
         this.render();
         requestAnimationFrame(this._update);
     }
@@ -47,7 +57,7 @@ export class Application {
     // initialization code (including event handler binding)
     start() {}
     // update code (input, animations, AI ...)
-    update() {}
+    update(dt) {}
     // render code (gl API calls)
     render() {}
     // resize code (e.g. update projection matrix)

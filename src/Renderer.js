@@ -1,9 +1,6 @@
-import { mat4, vec3 } from './lib/gl-matrix-module.js';
-
+import { mat4, vec3 } from '../lib/gl-matrix-module.js';
 import { WebGL } from './WebGL.js';
-
 import { shaders } from './shaders.js';
-import { GLTFLoader } from './GLTFLoader.js';
 import { GLTFNodes } from './GLTFNodes.js';
 
 // This class prepares all assets for use with WebGL
@@ -20,21 +17,11 @@ export class Renderer {
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
 
-        this.defaultTexture = WebGL.createTexture(gl, {
-            width: 1,
-            height: 1,
-            data: new Uint8Array([255, 255, 255, 255]),
-        });
-
-        this.defaultSampler = WebGL.createSampler(gl, {
-            min: gl.NEAREST,
-            mag: gl.NEAREST,
-            wrapS: gl.CLAMP_TO_EDGE,
-            wrapT: gl.CLAMP_TO_EDGE,
-        });
+        this.defaultTexture = WebGL.createTexture(gl, { width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) });
+        this.defaultSampler = WebGL.createSampler(gl, { min: gl.NEAREST, mag: gl.NEAREST, wrapS: gl.CLAMP_TO_EDGE, wrapT: gl.CLAMP_TO_EDGE });
     }
 
-    render(scene, camera, light, skybox) {
+    render(rootNode, camera, light, skybox) {
         const gl = this.gl;
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -53,20 +40,24 @@ export class Renderer {
         gl.uniform3fv(uniforms.uLight.attenuation, light.attenuation);
 
         // const mvpMatrix = this.getViewProjectionMatrix(camera);
-        for (const node of scene.children) {
-            if(node instanceof GLTFNodes) {
-                for (const primitive of node.nodes) {
-                    this.renderNode(primitive, mat4.create())
-                }
-            }else {
-                this.renderNode(node, mat4.create())
-            }
-        }
+        this.renderChildren(rootNode, rootNode.globalMatrix)
         
         // render Skybox / environment
         this.renderSkybox(skybox, camera);
     }
-    
+    // render children recursively
+    renderChildren(node, modelMatrix) {
+        for (const child of node.children) {
+            if(child instanceof GLTFNodes) { // render GLTF objects
+                for (const primitive of child.nodes) {
+                    this.renderGLTFNode(primitive, modelMatrix)
+                }
+            }else { // render non GLTF obejcts
+                this.renderNode(child, modelMatrix)
+            }
+        }
+    }
+    // rendering non GLTF nodes/objects
     renderNode(node, modelMatrix) {
         const gl = this.gl;
 
@@ -75,13 +66,7 @@ export class Renderer {
         mat4.mul(modelMatrix, modelMatrix, node.localMatrix); 
         const { program, uniforms } = this.programs.perFragmentWithEnvmap;
 
-        if (node.mesh) { // gltf objects drawing
-            // set modelMatrix uniform
-            gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
-            for (const primitive of node.mesh.primitives) {
-                this.renderPrimitive(primitive);
-            }
-        }else if(node.model && node.material) { // non gltf models
+        if(node.model && node.material) { // non gltf models only
             gl.bindVertexArray(node.model.vao);
             // set model texture and uniform
             gl.activeTexture(gl.TEXTURE0);
@@ -106,9 +91,26 @@ export class Renderer {
             gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
         }
 
-        for (const child of node.children) {
-            this.renderNode(child, modelMatrix);
+        this.renderChildren(node, modelMatrix)
+    }
+    // rendering GLTF nodes/objects
+    renderGLTFNode(node, modelMatrix) {
+        const gl = this.gl;
+
+        modelMatrix = mat4.clone(modelMatrix);
+        // multiply modelMatrix with localMatrix (children matrix is influenced be parent matrix)
+        mat4.mul(modelMatrix, modelMatrix, node.localMatrix); 
+        const { program, uniforms } = this.programs.perFragmentWithEnvmap;
+
+        if (node.mesh) { // gltf objects only drawing
+            // set modelMatrix uniform
+            gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
+            for (const primitive of node.mesh.primitives) {
+                this.renderPrimitive(primitive);
+            }
         }
+
+        this.renderChildren(node, modelMatrix)
     }
 
     renderPrimitive(primitive) {

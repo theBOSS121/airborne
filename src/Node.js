@@ -14,9 +14,10 @@ export class Node {
         this.transformationMatrixNeedsUpdate = false;
         this.transformationComponentsNeedUpdate = false;
 
-        // this.camera = options.camera || null;
-        this.mesh = options.mesh || null;
-
+        // gltf objects have mesh, non gltf objects gave model instead
+        this.mesh = options.mesh || null; 
+        
+        
         this.children = [...(options.children || [])];
         for (const child of this.children) {
             child.parent = this;

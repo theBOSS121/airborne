@@ -1,15 +1,15 @@
 import { vec3, vec4 } from '../lib/gl-matrix-module.js';
 
 // Material of a Node
+// GLTFNodes have material in this location: nodes[i].mesh.primitives[j].material
+// non GLTF nodes have material inside node.material
 export class Material {
 
     constructor(options = {}, envmap = {}) {
         // gltf specific -----------------------------------------------
         this.baseColorTexture = options.baseColorTexture || null;
         this.baseColorTexCoord = options.baseColorTexCoord || 0;
-        this.baseColorFactor = options.baseColorFactor
-            ? vec4.clone(options.baseColorFactor)
-            : vec4.fromValues(1, 1, 1, 1);
+        this.baseColorFactor = options.baseColorFactor ? vec4.clone(options.baseColorFactor) : vec4.fromValues(1, 1, 1, 1);
 
         this.metallicRoughnessTexture = options.metallicRoughnessTexture || null;
         this.metallicRoughnessTexCoord = options.metallicRoughnessTexCoord || 0;
@@ -26,9 +26,7 @@ export class Material {
 
         this.emissiveTexture = options.emissiveTexture || null;
         this.emissiveTexCoord = options.emissiveTexCoord || 0;
-        this.emissiveFactor = options.emissiveFactor
-            ? vec3.clone(options.emissiveFactor)
-            : vec3.fromValues(0, 0, 0);
+        this.emissiveFactor = options.emissiveFactor ? vec3.clone(options.emissiveFactor) : vec3.fromValues(0, 0, 0);
 
         this.alphaMode = options.alphaMode || 'OPAQUE';
         this.alphaCutoff = options.alphaCutoff !== undefined ? options.alphaCutoff : 0.5;
