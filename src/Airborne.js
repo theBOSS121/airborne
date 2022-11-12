@@ -6,6 +6,7 @@ import { CameraController } from './CameraController.js';
 import { Material } from './Material.js';
 import { GLTFLoader } from './GLTFLoader.js';
 import { GLTFNodes } from './GLTFNodes.js';
+import { Physics } from './Physics.js';
 
 class Airborne extends Application {
     
@@ -23,43 +24,56 @@ class Airborne extends Application {
         ]);
         // loading GLTF objects
         this.loader = new GLTFLoader(envmap),
-        await this.loader.load('../res/scena/scena.gltf');
-        this.scene = await this.loader.loadGLTFNodes(this.loader.defaultScene);
-        this.renderer.prepareGLTFNodes(this.scene);
-        await this.loader.load('../res/letalo/letalo.gltf');
+        // await this.loader.load('../res/scena/scena.gltf');
+        // this.scene = await this.loader.loadGLTFNodes(this.loader.defaultScene);
+        // this.renderer.prepareGLTFNodes(this.scene);
+        await this.loader.load('../res/plane.gltf');
         this.airplane = await this.loader.loadGLTFNodes(this.loader.defaultScene);
         this.renderer.prepareGLTFNodes(this.airplane);
         let a = quat.create()
         quat.rotateY(a, a, Math.PI/2)
         this.airplane.nodes[0].rotation = a
-        await this.loader.load('../res/gorivo/gorivo.gltf');
+        this.airplane.nodes[0].createBoundingBox(cube, grass)
+        await this.loader.load('../res/fuel.gltf');
         this.fuel = await this.loader.loadGLTFNodes(this.loader.defaultScene);
+        this.fuel.nodes[0].translation = [0, 0, -5]
         this.renderer.prepareGLTFNodes(this.fuel);
+        this.fuel.nodes[0].createBoundingBox(cube, grass)
+
+        
+        // await this.loader.load('../res/cloud_1.gltf');
+        // this.cloud1 = await this.loader.loadGLTFNodes(this.loader.defaultScene);
+        // this.cloud1.nodes[0].translation = [0, 0, -20]
+        // this.renderer.prepareGLTFNodes(this.cloud1);
+        // this.cloud1.nodes[0].createBoundingBox(cube, grass)
 
         // this is root of all objects
-        this.root = new Node();
+        this.root = new Node({ collidable: false });
         // camera
-        this.camera = new Node();
+        this.camera = new Node({ collidable: false });
         this.root.addChild(this.camera);
         this.camera.projection = mat4.create();
         this.camera.translation = [0, 3, 4];
         this.camera.eulerRotation = [-Math.PI / 10, 0, 0];
         this.cameraController = new CameraController(this.camera, this.canvas);
         // light / sun
-        this.light = new Node();
+        this.light = new Node({ collidable: false });
         this.root.addChild(this.light);
         this.light.position = [-40, 50, 40];
         this.light.color = [255, 255, 255];
         this.light.intensity = 1000;
         this.light.attenuation = [0.001, 0, 0.2];
         // GLTF objects
-        this.root.addChild(this.scene);
-        this.root.addChild(this.airplane);
+        // this.root.addChild(this.scene);
         this.root.addChild(this.fuel);
+        this.root.addChild(this.airplane);
+        // this.root.addChild(this.cloud1);
         // objects        
         // this.funky = new Node();
         // this.cube1 = new Node();
+        // this.fuel.nodes[0].addChild(this.cube1)
         // this.cube2 = new Node();
+        // this.airplane.nodes[0].addChild(this.cube2)
         // this.cube3 = new Node();
         // this.floor = new Node();
         // this.root.addChild(this.funky);
@@ -77,11 +91,17 @@ class Airborne extends Application {
         // this.floor.material = new Material({}, envmap);
         // this.floor.material.texture = grass;
         // this.cube1.model = cube;
-        // this.cube1.material = new Material({}, envmap);
+        // this.cube1.material = new Material({ }, envmap);
         // this.cube1.material.texture = texture;
+        // let min = this.fuel.nodes[0].mesh.primitives[0].attributes.POSITION.min;
+        // let max = this.fuel.nodes[0].mesh.primitives[0].attributes.POSITION.max
+        // this.cube1.scale = [(max[0]-min[0])/2,(max[1]-min[1])/2,(max[2]-min[2])/2]
         // this.cube2.model = cube;
         // this.cube2.material = new Material({}, envmap);
-        // this.cube2.material.texture = crate
+        // this.cube2.material.texture = grass
+        // min = this.airplane.nodes[0].mesh.primitives[0].attributes.POSITION.min;
+        // max = this.airplane.nodes[0].mesh.primitives[0].attributes.POSITION.max
+        // this.cube2.scale = [(max[0]-min[0])/2,(max[1]-min[1])/2,(max[2]-min[2])/2]
         // this.cube3.model = cube;
         // this.cube3.material = new Material({}, envmap);
         // this.cube3.material.texture = crate;
@@ -94,10 +114,12 @@ class Airborne extends Application {
         this.skybox.model = cube;
         this.skybox.material = new Material({}, envmap);
         
+        this.physics = new Physics(this.root);
     }
 
     update(dt) {
         this.cameraController.update(dt);
+        this.physics.update(dt);
         
 
         this.light.translation = this.light.position;
@@ -115,6 +137,8 @@ class Airborne extends Application {
         // mat4.fromTranslation(t3, [-1, 2, -3]);
         // mat4.rotateY(t3, t3, 1);
         // this.cube3.localMatrix = t3
+        this.fuel.nodes[0].translation = [0, 0, this.fuel.nodes[0].translation[2]+0.01]
+        // console.log(this.fuel.nodes[0].translation[2])
     }
     
     render() {

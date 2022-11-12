@@ -106,7 +106,7 @@ void main() {
 
     // mixing color from lights and reflection/refration
     // TODO: maybe not a good color mixture
-    oColor = 0.5 * pow(vec4(finalColor, 1), vec4(1.0 / gamma)) + 0.5 * mix(reflection, refraction, uEffect); 
+    oColor = 0.5 * pow(vec4(finalColor, 1), vec4(1.0 / gamma)) + 0.5 * mix(reflection, refraction, uEffect);
 }
 `;
 

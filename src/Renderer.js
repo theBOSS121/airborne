@@ -25,6 +25,8 @@ export class Renderer {
         const gl = this.gl;
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        // render Skybox / environment
+        this.renderSkybox(skybox, camera);
 
         const { program, uniforms } = this.programs.perFragmentWithEnvmap;
         gl.useProgram(program);
@@ -40,10 +42,7 @@ export class Renderer {
         gl.uniform3fv(uniforms.uLight.attenuation, light.attenuation);
 
         // const mvpMatrix = this.getViewProjectionMatrix(camera);
-        this.renderChildren(rootNode, rootNode.globalMatrix)
-        
-        // render Skybox / environment
-        this.renderSkybox(skybox, camera);
+        this.renderChildren(rootNode, rootNode.globalMatrix)        
     }
     // render children recursively
     renderChildren(node, modelMatrix) {
@@ -102,6 +101,11 @@ export class Renderer {
         mat4.mul(modelMatrix, modelMatrix, node.localMatrix); 
         const { program, uniforms } = this.programs.perFragmentWithEnvmap;
 
+        if(node.boundingBox) {
+            gl.disable(gl.DEPTH_TEST); // disable CULL_FACE
+            this.renderNode(node.boundingBox, modelMatrix)
+            gl.enable(gl.DEPTH_TEST); // disable CULL_FACE
+        }
         if (node.mesh) { // gltf objects only drawing
             // set modelMatrix uniform
             gl.uniformMatrix4fv(uniforms.uModelMatrix, false, modelMatrix);
@@ -110,6 +114,7 @@ export class Renderer {
             }
         }
 
+        
         this.renderChildren(node, modelMatrix)
     }
 
