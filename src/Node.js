@@ -1,4 +1,6 @@
-import { vec3, mat4, quat } from '../../lib/gl-matrix-module.js';
+import { vec3, mat4, quat } from '../lib/gl-matrix-module.js';
+import { GLTFNodes } from './GLTFNodes.js';
+import { Material } from './Material.js';
 
 export class Node {
 
@@ -23,6 +25,21 @@ export class Node {
             child.parent = this;
         }
         this.parent = null;
+        
+        if(this.mesh && this.mesh.primitives[0].attributes.POSITION.min && this.mesh.primitives[0].attributes.POSITION.min) {            
+            this.aabb = { min: this.mesh.primitives[0].attributes.POSITION.min, max: this.mesh.primitives[0].attributes.POSITION.max, }
+        }else {
+            this.aabb = { min: [0, 0, 0], max: [0, 0, 0], }
+        }
+        this.collidable = options.collidable == false ? false : true
+    }
+
+    createBoundingBox(model, texture) {
+        this.boundingBox = new Node();        
+        this.boundingBox.model = model;
+        this.boundingBox.material = new Material({ }, null);
+        this.boundingBox.material.texture = texture;
+        this.boundingBox.scale = [(this.aabb.max[0]-this.aabb.min[0])/2,(this.aabb.max[1]-this.aabb.min[1])/2,(this.aabb.max[2]-this.aabb.min[2])/2]
     }
 
     updateTransformationComponents() {
@@ -110,7 +127,13 @@ export class Node {
     traverse(before, after) {
         if (before) before(this);
         for (const child of this.children) {
-            child.traverse(before, after);
+            if(child instanceof GLTFNodes) {
+                for (const primitive of child.nodes) {
+                    primitive.traverse(before, after);
+                }
+            }else {
+                child.traverse(before, after);
+            }
         }
         if (after) after(this);
     }

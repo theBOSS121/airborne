@@ -170,13 +170,13 @@ export class GLTFLoader {
         return texture;
     }
 
-    async loadMaterial(nameOrIndex) {
+    async loadMaterial(nameOrIndex, myOptions) {
         const gltfSpec = this.findByNameOrIndex(this.gltf.materials, nameOrIndex);
         if (this.cache.has(gltfSpec)) {
             return this.cache.get(gltfSpec);
         }
 
-        const options = {};
+        const options = {...myOptions};
         const pbr = gltfSpec.pbrMetallicRoughness;
         if (pbr !== undefined) {
             if (pbr.baseColorTexture !== undefined) {
@@ -219,7 +219,7 @@ export class GLTFLoader {
         return material;
     }
 
-    async loadMesh(nameOrIndex) {
+    async loadMesh(nameOrIndex, myOptions) {
         const gltfSpec = this.findByNameOrIndex(this.gltf.meshes, nameOrIndex);
         if (this.cache.has(gltfSpec)) {
             return this.cache.get(gltfSpec);
@@ -236,7 +236,7 @@ export class GLTFLoader {
                 primitiveOptions.indices = await this.loadAccessor(primitiveSpec.indices);
             }
             if (primitiveSpec.material !== undefined) {
-                primitiveOptions.material = await this.loadMaterial(primitiveSpec.material);
+                primitiveOptions.material = await this.loadMaterial(primitiveSpec.material, myOptions);
             }
             primitiveOptions.mode = primitiveSpec.mode;
             // const primitive = new Primitive(primitiveOptions);
@@ -244,7 +244,7 @@ export class GLTFLoader {
                 attributes: {...(primitiveOptions.attributes || {})},
                 indices: primitiveOptions.indices || null,
                 mode: primitiveOptions.mode !== undefined ? primitiveOptions.mode : 4,
-                material: primitiveOptions.material || new Material()
+                material: primitiveOptions.material || new Material(myOptions)
             }
             options.primitives.push(primitive);
         }
@@ -254,7 +254,7 @@ export class GLTFLoader {
         return mesh;
     }
 
-    async loadNode(nameOrIndex) {
+    async loadNode(nameOrIndex, myOptions) {
         const gltfSpec = this.findByNameOrIndex(this.gltf.nodes, nameOrIndex);
         if (this.cache.has(gltfSpec)) {
             return this.cache.get(gltfSpec);
@@ -268,7 +268,7 @@ export class GLTFLoader {
             }
         }
         if (gltfSpec.mesh !== undefined) {
-            options.mesh = await this.loadMesh(gltfSpec.mesh);
+            options.mesh = await this.loadMesh(gltfSpec.mesh, myOptions);
         }
 
         const node = new Node(options);
@@ -276,7 +276,7 @@ export class GLTFLoader {
         return node;
     }
 
-    async loadGLTFNodes(nameOrIndex) {
+    async loadGLTFNodes(nameOrIndex, myOptions) {
         const gltfSpec = this.findByNameOrIndex(this.gltf.scenes, nameOrIndex);
         if (this.cache.has(gltfSpec)) {
             return this.cache.get(gltfSpec);
@@ -285,7 +285,7 @@ export class GLTFLoader {
         const options = { nodes: [] };
         if (gltfSpec.nodes) {
             for (const nodeIndex of gltfSpec.nodes) {
-                const node = await this.loadNode(nodeIndex);
+                const node = await this.loadNode(nodeIndex, myOptions);
                 options.nodes.push(node);
             }
         }
