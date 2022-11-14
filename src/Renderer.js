@@ -16,6 +16,8 @@ export class Renderer {
         gl.clearColor(1, 1, 1, 1);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
         this.defaultTexture = WebGL.createTexture(gl, { width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) });
         this.defaultSampler = WebGL.createSampler(gl, { min: gl.NEAREST, mag: gl.NEAREST, wrapS: gl.CLAMP_TO_EDGE, wrapT: gl.CLAMP_TO_EDGE });
@@ -32,6 +34,7 @@ export class Renderer {
         // set uniforms
         const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
+        // mat4.mul(mvpMatrix, this.camera.projection, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
         gl.uniform3fv(uniforms.uCameraPosition, mat4.getTranslation(vec3.create(), camera.globalMatrix));
@@ -45,6 +48,7 @@ export class Renderer {
         // render Skybox / environment
         this.renderSkybox(skybox, camera);
     }
+
     // render children recursively
     renderChildren(node, modelMatrix) {
         for (const child of node.children) {
@@ -52,7 +56,7 @@ export class Renderer {
                 for (const primitive of child.nodes) {
                     this.renderGLTFNode(primitive, modelMatrix)
                 }
-            }else { // render non GLTF obejcts
+            } else { // render non GLTF obejcts
                 this.renderNode(child, modelMatrix)
             }
         }

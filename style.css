@@ -1,10 +1,15 @@
-body, html {
+@font-face {
+    font-family: sportype;
+    src: url(./res/fonts/slopeopera.ttf);
+}
+body, html, p {
     margin: 0;
     padding: 0;
 }
 
 * {
-    font-family: sans-serif;
+    font-family: sportype;
+    user-select: none;
 }
 
 .fullscreen {
@@ -13,7 +18,7 @@ body, html {
     overflow: hidden;
 }
 
-.fullscreen > * {
+canvas {
     width: 100%;
     height: 100%;
 }
@@ -50,13 +55,14 @@ a.back:hover {
 }
 
 .loader {
-    width: 100px;
-    height: 100px;
+    width: 75px;
+    height: 75px;
 
-    border: 15px solid transparent;
+    border: 12px solid transparent;
     border-radius: 50%;
-    border-top-color: #999;
-    border-bottom-color: #999;
+    border-top-color: #558cd1;
+    border-right-color: #558cd1;
+    border-bottom-color: #558cd1;
 
     animation: spin 2s ease-in-out infinite;
 }
@@ -64,4 +70,74 @@ a.back:hover {
 @keyframes spin {
     0% { transform: rotate(0deg); }
   100% { transform: rotate(1800deg); }
+}
+
+.game-container {
+    position: absolute;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-container p {
+    font-size: 25px;
+    color: white;
+    animation: ani 3s linear infinite;
+}
+
+@keyframes ani { 
+    0% {
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 0.9;
+    }
+    100% {
+        opacity: 0.2;
+    }
+}
+
+.player-container {
+    position: absolute;
+    bottom: 25px;
+    left: 25px;
+    border-radius: 50%;
+    background-color: rgba(47, 47, 47, 0.85);
+    width: 170px;
+    height: 170px;
+    display: none; 
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow:  2px 2px 3px rgba(0, 0, 0, 0.4);
+}
+
+.speedometer {
+    color: white;
+    font-size: 14px;
+}
+
+.speedometer span {
+    font-size: 22px;
+}
+
+.fuelbar {
+    height: 20px;
+    width: 75%;
+    background-color: #ffc83c;
+    border-radius: 15px;
+    display: block;
+}
+
+.playtime {
+    color: #c00404;
+    font-size: 12px;
+}
+
+.playtime span {
+    font-size: 19px;
 }

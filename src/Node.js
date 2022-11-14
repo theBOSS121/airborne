@@ -1,4 +1,5 @@
 import { vec3, mat4, quat } from '../../lib/gl-matrix-module.js';
+import { GLTFNodes } from './GLTFNodes.js';
 
 export class Node {
 
@@ -110,7 +111,8 @@ export class Node {
     traverse(before, after) {
         if (before) before(this);
         for (const child of this.children) {
-            child.traverse(before, after);
+            if(child instanceof GLTFNodes) child.nodes[0].traverse(before, after);
+            else child.traverse(before, after);
         }
         if (after) after(this);
     }

@@ -86,7 +86,7 @@ void main() {
     // get texture color for fragment and power it to the gamma (albedo)
     vec3 albedo = pow(texture(uTexture, vTexCoord).rgb, vec3(gamma));
     // color = albedo * max(diffuseLight, ambientLight) + specularLight
-    vec3 finalColor = albedo * max(diffuseLight, vec3(0.005,0.005,0.005)) + specularLight;
+    vec3 finalColor = albedo * max(diffuseLight, vec3(0.007,0.007,0.007)) + specularLight;
 
     // oColor = pow(vec4(finalColor, 1), vec4(1.0 / gamma));
     
