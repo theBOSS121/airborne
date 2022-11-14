@@ -41,10 +41,14 @@ export class FuelController {
         this.fuels.push(fuel);
         fuel.nodes[0].translation = translation;
         fuel.nodes[0].scale = [2, 2, 2];
+        console.log("test")
+
+        // TODO: make boosts gloom
 
         // this.light = new Node();
         // fuel.nodes[0].addChild(this.light);
         // this.light.color = [255, 247, 15];
+        // this.light.position = [0, 5, 0];
         // this.light.intensity = 1;
     }
 }

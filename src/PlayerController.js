@@ -11,7 +11,7 @@ export class PlayerController {
 
         // fuel percentage
         this.fuel = 1;
-        this.fuelPerUnits = 0.005;
+        this.fuelPerUnits = 0.0025;
 
         // helps with pausing the game 
         this.focusLock = false;
