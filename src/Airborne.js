@@ -6,6 +6,7 @@ import { CameraController } from './CameraController.js';
 import { Material } from './Material.js';
 import { GLTFLoader } from './GLTFLoader.js';
 import { GLTFNodes } from './GLTFNodes.js';
+import {Physics} from './Physics.js';
 
 class Airborne extends Application {
     
@@ -35,6 +36,8 @@ class Airborne extends Application {
         await this.loader.load('../res/gorivo/gorivo.gltf');
         this.fuel = await this.loader.loadGLTFNodes(this.loader.defaultScene);
         this.renderer.prepareGLTFNodes(this.fuel);
+
+        this.physics = new Physics(this.scene);
 
         // this is root of all objects
         this.root = new Node();
@@ -99,6 +102,7 @@ class Airborne extends Application {
     update(dt) {
         this.cameraController.update(dt);
         
+        this.physics.update(dt, this.cameraController);
 
         this.light.translation = this.light.position;
         // rotation and position of boxes should be set at init

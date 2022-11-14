@@ -114,4 +114,13 @@ export class Node {
         }
         if (after) after(this);
     }
+
+    get maxT(){
+        return Object.values(Object.values(Object.values(Object.values(this.mesh)[0][0])[0])[0])[6];
+    }
+
+    get minT(){
+        return Object.values(Object.values(Object.values(Object.values(this.mesh)[0][0])[0])[0])[6];
+    }
+
 }
