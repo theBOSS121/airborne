@@ -35,14 +35,13 @@ export class Material {
         this.texture = null;
         this.envmap = envmap;
 
-        this.diffuse = 1;
-        this.specular = 1;
-        this.shininess = 50;
-
-        this.effect = 0.5;
-        this.reflectance = 1;
-        this.transmittance = 0;
-        this.ior = 0.95;
+        this.diffuse = options.diffuse || 1;
+        this.specular = options.specular || 1;
+        this.shininess = options.shininess || 1;
+        this.effect = options.effect || 1;
+        this.reflectance = options.reflectance || 1;
+        this.transmittance = options.transmittance || 1;
+        this.ior = options.ior || 1;
 
     }
 

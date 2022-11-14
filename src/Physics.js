@@ -9,10 +9,10 @@ export class Physics {
     update(dt) {
         this.root.traverse(node => {
              
-            // Move every node with defined velocity.
-            // if (node.velocity) {
-            //     vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
-            //     node.updateMatrix();
+            // Move every node with defined velocity.0];
+            if (node.velocity) {
+                node.translation = vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
+                node.updateTransformationMatrix();
 
                 // After moving, check for collision with every other node.
                 this.root.traverse(other => {
@@ -20,7 +20,8 @@ export class Physics {
                         this.resolveCollision(node, other);
                     }
                 });
-            // }
+            }
+
         });
     }
 
@@ -69,7 +70,6 @@ export class Physics {
             return;
         }else {
             console.log("collision")
-
         }
 
         // Move node A minimally to avoid collision.
@@ -103,10 +103,8 @@ export class Physics {
             minDirection = [0, 0, -minDiff];
         }
 
-        // vec3.add(a.translation, a.translation, minDirection);
         a.translation = [a.translation[0] + minDirection[0],a.translation[1] + minDirection[1],a.translation[2] + minDirection[2]]
         a.transformationMatrixNeedsUpdate = true
-        // a.updateMatrix();
     }
 
 }
