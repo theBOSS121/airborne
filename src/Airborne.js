@@ -24,7 +24,7 @@ class Airborne extends Application {
         const [cube, envmap, grass] = await Promise.all([
             this.renderer.loadModel('./res/cube/cube.json'),
             this.renderer.loadTexture('./res/images/sky2.jpg', { min: this.gl.LINEAR, mag: this.gl.LINEAR }),
-            this.renderer.loadTexture('./res/images/grayscale.png', { min: this.gl.LINEAR, mag: this.gl.LINEAR }),
+            this.renderer.loadTexture('./res/images/grass.png', { mip: true, min: this.gl.NEAREST_MIPMAP_NEAREST, mag: this.gl.NEAREST }),
         ]);
         
         // root
@@ -225,7 +225,7 @@ class Airborne extends Application {
         const w = this.canvas.clientWidth;
         const h = this.canvas.clientHeight;
         const aspect = w / h;
-        const fovy = Math.PI / 2;
+        const fovy = Math.PI / 2.5;
         const near = 0.1
         const far = Math.sqrt(2 * Math.pow(150, 2));
 
@@ -256,5 +256,4 @@ async function restart() {
 }
 const guiParentElement = document.querySelector('.player-container');
 guiParentElement.style.display = 'flex';
-console.log(document.querySelector('.fuelbar').offsetWidth)
 app.playerController.fuelElement.startWidth = document.querySelector('.fuelbar').offsetWidth;

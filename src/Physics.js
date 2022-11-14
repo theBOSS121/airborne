@@ -69,7 +69,7 @@ export class Physics {
         if (!isColliding) {
             return;
         }else {
-            console.log("collision")
+            // console.log("collision")
         }
 
         // Move node A minimally to avoid collision.

@@ -120,7 +120,6 @@ export class PlayerController {
         const uz = 1 - 2 * (x * x + y * y);
         const V = [ux, uy, uz];
         // quat.getAxisAngle(rotationAxis, this.airplaneNode.rotation);
-        console.log(V)
         const forward = vec3.set(vec3.create(), V[2], V[1], -V[0]);
         // const right = vec3.set(vec3.create(), Math.cos(0, 0, 0));
 
