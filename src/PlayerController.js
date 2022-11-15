@@ -4,15 +4,14 @@ import { app } from './Airborne.js';
 // Class that enables Camera control (first/third person view with mouse and wasd[qe])
 export class PlayerController {
 
-    constructor(cameraNode, airplaneNode, domElement) {
-        
+    constructor(cameraNode, airplaneNode, domElement) {        
+        this.ROTATION_INTERPOLATION = 0.9;
+        this.CAMERA_DISTANCE_FROM_AIRPLANE = 8;
         // playtime - in miliseconds, if null it will display 0
         this.playtime = null;
-
         // fuel percentage
         this.fuel = 1;
         this.fuelPerUnits = 0.0025;
-
         // helps with pausing the game 
         this.focusLock = false;
         // The node that this controller controls.
@@ -30,18 +29,19 @@ export class PlayerController {
         this.keys = {};
         // We are going to use Euler angles for rotation.
         this.eulerRotation = cameraNode.eulerRotation || [0, 0, 0] // rotation around [x, y, z]
-        this.ROTATION_INTERPOLATION = 0.9;
-        this.CAMERA_DISTANCE_FROM_AIRPLANE = 8;
+        this.cameraNode.rotation = quat.rotateY(this.cameraNode.rotation, this.cameraNode.rotation, -Math.PI/2)
+        this.cameraNode.translation = [-this.CAMERA_DISTANCE_FROM_AIRPLANE, 0, 0];
+
         // This is going to be a simple decay-based model, where
         // the user input is used as acceleration. The acceleration
         // is used to update velocity, which is in turn used to update
         // translation. If there is no user input, speed will decay.
         // The model needs some limits and parameters.
         // Acceleration in units per second squared.
-        this.acceleration = 20;
+        this.acceleration = 100;
         this.airdrag = 5;
         // Maximum speed in units per second.
-        this.MAX_SPEED = 100;
+        this.MAX_SPEED = 200;
         this.MIN_SPEED = 10;
         // this.airplaneNode.velocity = [this.MIN_SPEED, 0, 0];
         this.airplaneNode.velocity = [0, 0, 0];
@@ -89,48 +89,31 @@ export class PlayerController {
     }
 
     updateRotation(dt) {
-        this.cameraNode.rotation = quat.fromEuler(this.cameraNode.rotation, 0, this.radToDeg(-Math.PI/2), 0);
-        
-        // quat.rotateZ(this.airplaneNode.rotation, 0);
-        // quat.rotateY(this.airplaneNode.rotation, this.radToDeg(this.eulerRotation[1]));
-        // quat.rotateX(this.airplaneNode.rotation, 0);
-        // this.airplaneNode.transformationMatrixNeedsUpdate = true;
-        // this.airplaneNode.rotation =  quat.fromEuler(this.airplaneNode.rotation, 0, this.radToDeg(this.eulerRotation[1]), 10);
-        
-        const deltaAngles = vec3.create();
-        vec3.sub(deltaAngles, vec3.clone(this.eulerRotation), vec3.clone(this.oldEulerRotation || [0, 0, 0]));
-        const rotateAirplaneForQuat = quat.create();
-        quat.fromEuler(rotateAirplaneForQuat, 0, this.radToDeg(deltaAngles[1]), this.radToDeg(deltaAngles[0]));
-        // quat.fromEuler(rotateAirplaneForQuat, 0, this.radToDeg(deltaAngles[1]), 0);
-
-        this.airplaneNode.rotation =  quat.mul(this.airplaneNode.rotation, this.airplaneNode.rotation, rotateAirplaneForQuat);
-
-        this.oldEulerRotation = [...this.eulerRotation];
+        const rotation = quat.create();
+        quat.rotateY(rotation, rotation, this.eulerRotation[1]);
+        quat.rotateZ(rotation, rotation, this.eulerRotation[2]);
+        this.airplaneNode.rotation = rotation;
     }
 
     updateTranslation(dt) {
-
-        // Setup camera 's translation correctly behind airplane 
-        this.cameraNode.translation = [-this.CAMERA_DISTANCE_FROM_AIRPLANE, 0, 0];
-
-        // const rotationAxis = vec3.create();
+        const rotationAxis = vec3.create();
         const [w, x, y, z] = vec4.clone([...this.airplaneNode.rotation]);
         const ux = 2 * (x * z - w * y);
         const uy = 2 * (y * z + w * x);
         const uz = 1 - 2 * (x * x + y * y);
         const V = [ux, uy, uz];
-        // quat.getAxisAngle(rotationAxis, this.airplaneNode.rotation);
+        quat.getAxisAngle(rotationAxis, this.airplaneNode.rotation);
         const forward = vec3.set(vec3.create(), V[2], V[1], -V[0]);
-        // const right = vec3.set(vec3.create(), Math.cos(0, 0, 0));
-
+        const right = vec3.set(vec3.create(), Math.cos(0, 0, 0));
+        
         // 1: add movement acceleration
         const acc = vec3.create();
-        if (this.keys['KeyW']) {
+        // if (this.keys['KeyW']) {
             vec3.add(acc, acc, forward);
-        }
-        if (this.keys['KeyS']) {
-            vec3.sub(acc, acc, forward);
-        }
+        // }
+        // if (this.keys['KeyS']) {
+        //     vec3.sub(acc, acc, forward);
+        // }
         // if (this.keys['KeyD']) {
         //     vec3.add(acc, acc, right);
         // }
@@ -142,9 +125,9 @@ export class PlayerController {
         this.airplaneNode.velocity = vec3.scaleAndAdd(vec3.create(), this.airplaneNode.velocity, acc, dt * this.acceleration);
 
         // 3: if no movement, apply air drag
-        if (!this.keys['KeyW'] && !this.keys['KeyS'] && !this.keys['KeyD'] && !this.keys['KeyA']) {
+        // if (!this.keys['KeyW'] && !this.keys['KeyS'] && !this.keys['KeyD'] && !this.keys['KeyA']) {
             this.airplaneNode.velocity = vec3.scale(this.airplaneNode.velocity, this.airplaneNode.velocity, this.decay);
-        }
+        // }
 
         // update fuel levels
         this.updateFuel(dt);
@@ -177,13 +160,18 @@ export class PlayerController {
         // vertical pointer movement causes camera tilting (x-rotation).
         const dx = e.movementX;
         const dy = e.movementY;
-        this.eulerRotation[0] -= dy * this.pointerSensitivity;
-        this.eulerRotation[1]  -= dx * this.pointerSensitivity;
+        this.eulerRotation[2] -= dy * this.pointerSensitivity;
+        if(this.eulerRotation[2] > Math.PI/2 && this.eulerRotation[2] < Math.PI / 2 * 3) {
+            this.eulerRotation[1]  += dx * this.pointerSensitivity;
+        }else {
+            this.eulerRotation[1]  -= dx * this.pointerSensitivity;
+        }
         // Limit pitch so that the camera does not invert on itself.
         // if (this.eulerRotation[0] > Math.PI / 2) this.eulerRotation[0] = Math.PI / 2;
         // if (this.eulerRotation[0] < -Math.PI / 2) this.eulerRotation[0] = -Math.PI / 2;
         // Constrain yaw to the range [0, pi * 2]
         this.eulerRotation[1] = (this.eulerRotation[1]) % (Math.PI * 2);
+        this.eulerRotation[2] = ((this.eulerRotation[2]) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
     }
     // set this.keys[e.code] when key up/down to true/false
     keydownHandler(e) { this.keys[e.code] = true; }
