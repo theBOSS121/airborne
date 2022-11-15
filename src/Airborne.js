@@ -1,5 +1,5 @@
 import { GUI } from '../lib/dat.gui.module.js'
-import { mat4 } from '../lib/gl-matrix-module.js';
+import { quat, mat4, vec3, vec4 } from '../lib/gl-matrix-module.js';
 import { Application, GameState } from './Application.js'
 import { Node } from './Node.js';
 import { PlayerController } from './PlayerController.js';
@@ -225,10 +225,10 @@ class Airborne extends Application {
         const w = this.canvas.clientWidth;
         const h = this.canvas.clientHeight;
         const aspect = w / h;
-        const fovy = Math.PI / 2.5;
+        const fovy = Math.PI / 3;
         const near = 0.1
-        const far = Math.sqrt(2 * Math.pow(150, 2));
-
+        // const far = Math.sqrt(2 * Math.pow(150, 2));
+        const far = 1000
         mat4.perspective(this.camera.projection, fovy, aspect, near, far);
     }
 }

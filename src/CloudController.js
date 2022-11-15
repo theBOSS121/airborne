@@ -47,5 +47,6 @@ export class CloudController {
         cloud.nodes[0].scale = [Math.random() * 4 + 8, Math.random() * 3 + 3, Math.random() * 4 + 8];
         // Speed from -1.5 to 1.5 on x and z axes and 0 on y axis
         cloud.nodes[0].velocity = [Math.random() * 3 - 1.5, 0, Math.random() * 3 - 1.5]
+        cloud.nodes[0].collidable = false
     }
 }
