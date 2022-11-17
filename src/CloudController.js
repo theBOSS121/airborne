@@ -42,11 +42,11 @@ export class CloudController {
         this.root.addChild(cloud);
         this.clouds.push(cloud);
         // Spawn somewhere from -150 to 150 on x and z axes and from 50 to 75 on y axis
-        cloud.nodes[0].translation = [Math.random() * 300 - 150, Math.random() * 15 + 50, Math.random() * 300 - 150];
+        cloud.nodes[0].translation = [Math.random() * 300 - 150, Math.random() * 25 + 40, Math.random() * 300 - 150];
         // Size between 8 and 12 on x and z axes and from 3 to 6 on y axis
         cloud.nodes[0].scale = [Math.random() * 4 + 8, Math.random() * 3 + 3, Math.random() * 4 + 8];
-        // Speed from -1.5 to 1.5 on x and z axes and 0 on y axis
-        cloud.nodes[0].velocity = [Math.random() * 3 - 1.5, 0, Math.random() * 3 - 1.5]
-        cloud.nodes[0].collidable = false
+        // Speed from -2.5 to 2.5 on x and z axes and 0 on y axis
+        cloud.nodes[0].velocity = [Math.random() * 5 - 2.5, 0, Math.random() * 5 - 2.5]
+        cloud.nodes[0].collidable = false;
     }
 }

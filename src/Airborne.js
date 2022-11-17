@@ -1,5 +1,5 @@
 import { GUI } from '../lib/dat.gui.module.js'
-import { quat, mat4, vec3, vec4 } from '../lib/gl-matrix-module.js';
+import { mat4 } from '../lib/gl-matrix-module.js';
 import { Application, GameState } from './Application.js'
 import { Node } from './Node.js';
 import { PlayerController } from './PlayerController.js';
@@ -8,13 +8,13 @@ import { GLTFLoader } from './GLTFLoader.js';
 import { Physics } from './Physics.js';
 import { FuelController } from './FuelController.js';
 import { CloudController } from './CloudController.js';
+import { NodeType } from './Node.js';
 
 class Airborne extends Application {
     
     pauseElement = document.querySelector('.pause-container');
     gameOverElement = document.querySelector('.game-over-container');
 
-    SECONDS_PER_BOOST = 20;
 
     async start() {
 
@@ -29,6 +29,8 @@ class Airborne extends Application {
         
         // root
         this.root = new Node();
+        this.physics = new Physics(this.root);
+
         
         // loading scene
         this.loader = new GLTFLoader(envmap),
@@ -52,7 +54,16 @@ class Airborne extends Application {
         this.light.color = [237, 205, 459];
         this.light.intensity = 5000;
         this.light.attenuation = [0.01, 0.2, 0.2];
+        this.light.collidable = false;
         
+
+        // airplane - camera connector
+        this.connector = new Node();
+        this.connector.nodeType = NodeType.PLAYER;
+        this.root.addChild(this.connector);
+        this.connector.itisfuckingstupid = 'connector'
+
+
         // airplane
         await this.loader.load('../res/plane/plane.gltf');
         this.airplane = await this.loader.loadGLTFNodes(this.loader.defaultScene, {
@@ -63,113 +74,41 @@ class Airborne extends Application {
             reflectance : 0.1, //implemented
             transmittance : 0.3,
             ior : 0.99,
-        });
-        this.renderer.prepareGLTFNodes(this.airplane);
-        this.root.addChild(this.airplane);
-        this.airplane.nodes[0].createBoundingBox(cube, grass)
+        }); 
 
+        this.airplane.nodes[0].scale = [1, 1, 1];
+        this.renderer.prepareGLTFNodes(this.airplane);
+        // this.airplane.nodes[0].createBoundingBox(cube, grass);
+        this.connector.translation = [-10, 10, 10]
+        this.connector.addChild(this.airplane);
+        
 
         // camera
         this.camera = new Node();
+        this.camera.collidable = false;
         this.camera.projection = mat4.create();
+        this.connector.addChild(this.camera);
 
         // initialize player controller
-        this.playerController = new PlayerController(this.camera, this.airplane.nodes[0], this.canvas);
-        this.airplane.nodes[0].addChild(this.camera);
-
+        this.playerController = new PlayerController(this.connector, this.airplane.nodes[0], this.camera, this.canvas);
 
         // initialize fuel controller
-        this.fuelController = new FuelController(this.root, this.renderer, this.loader, 3, 5, cube, grass);
+        this.fuelController = new FuelController(this.root, this.renderer, this.loader, 3, 8, 0.25, cube, grass);
         await this.fuelController.loadNodes();
 
         // initialize clouds controller
         this.cloudController = new CloudController(this.root, this.renderer, this.loader, 12);
         await this.cloudController.loadNodes();
 
-
-        // // island
-        // await this.loader.load('../res/island/island_1.gltf');
-        // this.island = await this.loader.loadGLTFNodes(this.loader.defaultScene);
-        // this.renderer.prepareGLTFNodes(this.island);
-        // this.island.nodes[0].translation = [150, 0, 10];
-        // this.root.addChild(this.island);
-
-        // // island 2
-        // await this.loader.load('../res/island/island_1.gltf');
-        // this.island2 = await this.loader.loadGLTFNodes(this.loader.defaultScene);
-        // this.renderer.prepareGLTFNodes(this.island2);
-        // this.island2.nodes[0].translation = [-300, 0, 10];
-        // this.island.nodes[0].addChild(this.island2);
-
-        // let a = quat.create()
-        // quat.rotateY(a, a, Math.PI/2)
-        // this.airplane.nodes[0].rotation = a;
-        
-
-
-        await this.loader.load('../res/fuel/fuel.gltf');
-        this.fuel = await this.loader.loadGLTFNodes(this.loader.defaultScene);
-        this.renderer.prepareGLTFNodes(this.fuel);
-
-        // this is root of all objects
-
-        // GLTF objects
-        // this.root.ad+dChild(this.scene);
-        // this.root.addChild(this.fuel);
-        // objects        
-        // this.funky = new Node();
-        // this.cube1 = new Node();
-        // this.fuel.nodes[0].addChild(this.cube1)
-        // this.cube2 = new Node();
-        // this.airplane.nodes[0].addChild(this.cube2)
-        // this.cube3 = new Node();
-        // this.floor = new Node();
-        // this.root.addChild(this.funky);
-        // this.root.addChild(this.floor);
-        // this.root.addChild(this.cube1);
-        // this.root.addChild(this.cube2);
-        // this.cube2.addChild(this.cube3);
-        
-
-        // this.funky.model = funky;
-        // this.funky.material = new Material({}, envmap);
-        // this.funky.material.texture = texture;
-        // this.floor.scale = [10, 1, 10];
-        // this.floor.model = floor;
-        // this.floor.material = new Material({}, envmap);
-        // this.floor.material.texture = grass;
-        // this.cube1.model = cube;
-        // this.cube1.material = new Material({ }, envmap);
-        // this.cube1.material.texture = texture;
-        // let min = this.fuel.nodes[0].mesh.primitives[0].attributes.POSITION.min;
-        // let max = this.fuel.nodes[0].mesh.primitives[0].attributes.POSITION.max
-        // this.cube1.scale = [(max[0]-min[0])/2,(max[1]-min[1])/2,(max[2]-min[2])/2]
-        // this.cube2.model = cube;
-        // this.cube2.material = new Material({}, envmap);
-        // this.cube2.material.texture = grass
-        // min = this.airplane.nodes[0].mesh.primitives[0].attributes.POSITION.min;
-        // max = this.airplane.nodes[0].mesh.primitives[0].attributes.POSITION.max
-        // this.cube2.scale = [(max[0]-min[0])/2,(max[1]-min[1])/2,(max[2]-min[2])/2]
-        // this.cube3.model = cube;
-        // this.cube3.material = new Material({}, envmap);
-        // this.cube3.material.texture = crate;
-        // // variables
-        // this.leftRotation = 0;
-        // this.rightRotation = 0;
-
         // sky box
         this.skybox = new Node();
         this.skybox.model = cube;
         this.skybox.material = new Material({}, envmap);
-
-        this.physics = new Physics(this.root);
         
-        this.physics = new Physics(this.root);
     }
 
     update(dt) {
         // this.island.nodes[0].rotation = quat.rotateY(this.island.nodes[0].rotation, this.island.nodes[0].rotation, dt)
-
         
         this.playerController.update(dt);
         this.fuelController.update(dt);
@@ -191,7 +130,6 @@ class Airborne extends Application {
         // mat4.fromTranslation(t3, [-1, 2, -3]);
         // mat4.rotateY(t3, t3, 1);
         // this.cube3.localMatrix = t3
-        this.fuel.nodes[0].translation = [0, 0, this.fuel.nodes[0].translation[2]+0.01]
         // console.log(this.fuel.nodes[0].translation[2])
     }
 
@@ -214,6 +152,7 @@ class Airborne extends Application {
     gameOver() {
         this.state = GameState.GAME_OVER;
         this.gameOverElement.style.display = 'flex';
+        this.gameOverElement.querySelector('#score-p span').innerHTML = this.playerController.playtime.toFixed(0);
         // restart();
     }
     
@@ -225,8 +164,8 @@ class Airborne extends Application {
         const w = this.canvas.clientWidth;
         const h = this.canvas.clientHeight;
         const aspect = w / h;
-        const fovy = Math.PI / 3;
-        const near = 0.1
+        const fovy = Math.PI / 2.4;
+        const near = 1;
         // const far = Math.sqrt(2 * Math.pow(150, 2));
         const far = 1000
         mat4.perspective(this.camera.projection, fovy, aspect, near, far);

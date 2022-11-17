@@ -1,5 +1,7 @@
 import { vec3, mat4 } from '../lib/gl-matrix-module.js';
-
+import { app } from './Airborne.js';
+import { Node, NodeType } from './Node.js';
+import { GLTFNodes } from './GLTFNodes.js';
 export class Physics {
 
     constructor(root) {
@@ -59,7 +61,7 @@ export class Physics {
         return { min: newmin, max: newmax };
     }
 
-    resolveCollision(a, b) {
+    resolveCollision(a, b, onlyReturnIsColliding) {
         // Get global space AABBs.
         const aBox = this.getTransformedAABB(a);
         const bBox = this.getTransformedAABB(b);
@@ -67,9 +69,26 @@ export class Physics {
         // Check if there is collision.
         const isColliding = this.aabbIntersection(aBox, bBox);
         if (!isColliding) {
-            return;
-        }else {
+            return false;
+        } else {
+            if (onlyReturnIsColliding) return true;
+            const collisionNodes = [a, b];
+            const collisionNodesTypes = collisionNodes.map(n => n.nodeType);
+            const fuelSet = [NodeType.PLAYER, NodeType.FUEL];
+            if (collisionNodes.every(n => fuelSet.includes(n.nodeType))) {
+                if (b.nodeType == NodeType.FUEL) {
+                    app.root.traverse(() => {}, (n) => {
+                        if (n == b) {
+                            app.fuelController.pickedUp(b);
+                            return;
+                        }
+                    });
+                    return;
+                } 
             // console.log("collision")
+            } else if (collisionNodesTypes.some(nt => nt == NodeType.PLAYER)) {
+                app.gameOver();
+            }
         }
 
         // Move node A minimally to avoid collision.

@@ -4,19 +4,21 @@ import { app } from './Airborne.js';
 // Class that enables Camera control (first/third person view with mouse and wasd[qe])
 export class PlayerController {
 
-    constructor(cameraNode, airplaneNode, domElement) {        
+    constructor(connectorNode, airplaneNode, cameraNode, domElement) {
+
         this.ROTATION_INTERPOLATION = 0.9;
-        this.CAMERA_DISTANCE_FROM_AIRPLANE = 8;
+        this.CAMERA_DISTANCE_FROM_AIRPLANE = 7;
         // playtime - in miliseconds, if null it will display 0
         this.playtime = null;
         // fuel percentage
         this.fuel = 1;
-        this.fuelPerUnits = 0.0025;
-        // helps with pausing the game 
+        this.fuelPerUnits = 0.00125;
+        // helps with pausing the game
         this.focusLock = false;
         // The node that this controller controls.
-        this.cameraNode = cameraNode;
+        this.connectorNode = connectorNode;
         this.airplaneNode = airplaneNode;
+        this.cameraNode = cameraNode;
         // The activation DOM element.
         this.domElement = domElement;
         this.pauseElement = document.querySelector('.pause-container');
@@ -29,7 +31,7 @@ export class PlayerController {
         this.keys = {};
         // We are going to use Euler angles for rotation.
         this.eulerRotation = cameraNode.eulerRotation || [0, 0, 0] // rotation around [x, y, z]
-        this.cameraNode.rotation = quat.rotateY(this.cameraNode.rotation, this.cameraNode.rotation, -Math.PI/2)
+        this.cameraNode.rotation = quat.rotateY(this.cameraNode.rotation, this.cameraNode.rotation,  -Math.PI / 2);
         this.cameraNode.translation = [-this.CAMERA_DISTANCE_FROM_AIRPLANE, 0, 0];
 
         // This is going to be a simple decay-based model, where
@@ -38,13 +40,12 @@ export class PlayerController {
         // translation. If there is no user input, speed will decay.
         // The model needs some limits and parameters.
         // Acceleration in units per second squared.
-        this.acceleration = 100;
+        this.acceleration = 55;
         this.airdrag = 5;
         // Maximum speed in units per second.
-        this.MAX_SPEED = 200;
-        this.MIN_SPEED = 10;
+        this.MIN_SPEED = 5;
         // this.airplaneNode.velocity = [this.MIN_SPEED, 0, 0];
-        this.airplaneNode.velocity = [0, 0, 0];
+        this.connectorNode.velocity = [0, 0, 0];
         // Decay as 1 - log percent max speed loss per second.
         this.decay = 0.99;
         // Pointer sensitivity in radians per pixel.
@@ -60,7 +61,7 @@ export class PlayerController {
         const element = this.domElement;
         const doc = element.ownerDocument;
 
-        
+
 
         doc.addEventListener('keydown', this.keydownHandler);
         doc.addEventListener('keyup', this.keyupHandler);
@@ -90,22 +91,31 @@ export class PlayerController {
 
     updateRotation(dt) {
         const rotation = quat.create();
+        
         quat.rotateY(rotation, rotation, this.eulerRotation[1]);
         quat.rotateZ(rotation, rotation, this.eulerRotation[2]);
-        this.airplaneNode.rotation = rotation;
+        // quat.rotateX(rotation, rotation, -this.eulerRotation[1]);
+        quat.slerp(rotation, this.connectorNode.rotation, rotation, 0.02);
+
+        this.connectorNode.rotation = rotation;
+
+
+
+
+        // this.cameraNode.rotation = camRotation;
     }
 
     updateTranslation(dt) {
-        const rotationAxis = vec3.create();
-        const [w, x, y, z] = vec4.clone([...this.airplaneNode.rotation]);
+        // get a unit vector that airplane is pointing at - from quaternion
+        const [w, x, y, z] = vec4.clone([...this.connectorNode.rotation]);
         const ux = 2 * (x * z - w * y);
         const uy = 2 * (y * z + w * x);
         const uz = 1 - 2 * (x * x + y * y);
         const V = [ux, uy, uz];
-        quat.getAxisAngle(rotationAxis, this.airplaneNode.rotation);
+        
         const forward = vec3.set(vec3.create(), V[2], V[1], -V[0]);
         const right = vec3.set(vec3.create(), Math.cos(0, 0, 0));
-        
+
         // 1: add movement acceleration
         const acc = vec3.create();
         // if (this.keys['KeyW']) {
@@ -122,11 +132,11 @@ export class PlayerController {
         // }
 
         // 2: update velocity
-        this.airplaneNode.velocity = vec3.scaleAndAdd(vec3.create(), this.airplaneNode.velocity, acc, dt * this.acceleration);
+        this.connectorNode.velocity = vec3.scaleAndAdd(vec3.create(), this.connectorNode.velocity, acc, dt * this.acceleration);
 
         // 3: if no movement, apply air drag
         // if (!this.keys['KeyW'] && !this.keys['KeyS'] && !this.keys['KeyD'] && !this.keys['KeyA']) {
-            this.airplaneNode.velocity = vec3.scale(this.airplaneNode.velocity, this.airplaneNode.velocity, this.decay);
+            this.connectorNode.velocity = vec3.scale(this.connectorNode.velocity, this.connectorNode.velocity, this.decay);
         // }
 
         // update fuel levels
@@ -134,25 +144,32 @@ export class PlayerController {
     }
 
     updateFuel(dt) {
-        const speed = vec3.len(this.airplaneNode.velocity); // returns square root of the sum of squares
+        const speed = vec3.len(this.connectorNode.velocity); // returns square root of the sum of squares
         this.fuel -= dt * speed * this.fuelPerUnits
         if (this.fuel <= 0) {
             // app.gameOver();
+        } else if (this.fuel > 1) {
+            this.fuel = 1;
         }
     }
 
     updateGUI(dt) {
-        const speed = vec3.len(this.airplaneNode.velocity); // returns square root of the sum of squares
+        // console.log(app.root)
+        const speed = vec3.len(this.connectorNode.velocity) * 3.6; // returns square root of the sum of squares
         this.speedometerElement.innerHTML = speed.toFixed(0);
         this.fuelElement.style.width = `${this.fuelElement.startWidth * this.fuel}px`;
         this.playtimeElement.innerHTML = (this.playtime ||0).toFixed(0);
     }
 
     update(dt) {
+        if (!dt) return; // if dt == 0 - means the game is paused, so don't update - look at Applicaton.js _update function
         this.playtime += dt;
-        this.updateTranslation(dt);
         this.updateRotation(dt);
+        this.updateTranslation(dt);
         this.updateGUI(dt);
+        const r = quat.create();
+        quat.rotateY(r, this.cameraNode.rotation, Math.PI/2);
+        this.cameraNode.rotation = quat.slerp(this.cameraNode.rotation, r, this.connectorNode.rotation, 0.99);
     }
 
     pointermoveHandler(e) {

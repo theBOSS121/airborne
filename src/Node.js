@@ -2,6 +2,11 @@ import { vec3, mat4, quat } from '../lib/gl-matrix-module.js';
 import { GLTFNodes } from './GLTFNodes.js';
 import { Material } from './Material.js';
 
+export const NodeType = {
+    PLAYER: 0,
+    FUEL: 1,
+}
+
 export class Node {
 
     constructor(options = {}) {
@@ -118,6 +123,7 @@ export class Node {
 
     removeChild(node) {
         const index = this.children.indexOf(node);
+        console.log(index)
         if (index >= 0) {
             this.children.splice(index, 1);
             node.parent = null;

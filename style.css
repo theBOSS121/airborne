@@ -79,6 +79,7 @@ a.back:hover {
     display: none;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
 }
 
 .game-container p {
@@ -122,7 +123,7 @@ a.back:hover {
 }
 
 .speedometer span {
-    font-size: 22px;
+    font-size: 26px;
 }
 
 .fuelbar {
@@ -135,9 +136,18 @@ a.back:hover {
 
 .playtime {
     color: #c00404;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .playtime span {
-    font-size: 19px;
+    font-size: 25px;
+}
+
+#score-p {
+    font-size: 20px;
+    color: #fff;
+}
+#score-p span {
+    font-size: 30px;
+    color: #c00404;
 }
