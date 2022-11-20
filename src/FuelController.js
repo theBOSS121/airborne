@@ -2,6 +2,8 @@ import { quat, vec2, vec3, mat4 } from '../lib/gl-matrix-module.js';
 
 import { Node } from './Node.js';
 
+//import { Renderer } from './Renderer.js';
+
 export class FuelController {
 
     constructor(root, renderer, loader, fuelPerMinute, amountOfFuelAtStart, cube, grass) {
@@ -21,6 +23,12 @@ export class FuelController {
     }
 
     update(dt) {
+        //-----------------------bloom-----------------------
+        /*this.renderer = new Renderer();
+        this.renderer.createBloomBuffers();*/
+        //-----------------------bloom-----------------------
+
+
         for (const fuel of this.fuels) {
             fuel.nodes[0].rotation = quat.rotateY(fuel.nodes[0].rotation, fuel.nodes[0].rotation, dt/2);
         }
@@ -43,7 +51,14 @@ export class FuelController {
         this.fuels.push(fuel);
         fuel.nodes[0].translation = translation;
         fuel.nodes[0].scale = [2, 2, 2];
-        fuel.nodes[0].createBoundingBox(this.cube, this.grass)
+        fuel.nodes[0].createBoundingBox(this.cube, this.grass);
+
+        //-----------------------bloom-----------------------
+        /*
+        const fuelEmissionImage = await this.loadImage('../res/fuel/ring.png');
+        const fuelEmissionTexture = this.renderer.createTexture(fuelEmissionImage);
+        fuel.nodes[0].emissionTexture = fuelEmissionTexture;*/
+        //-----------------------bloom-----------------------
         
 
         // TODO: make boosts gloom
@@ -54,4 +69,19 @@ export class FuelController {
         // this.light.position = [0, 5, 0];
         // this.light.intensity = 1;
     }
+
+        //-----------------------bloom-----------------------
+    /*loadImage(uri) {
+        return new Promise((resolve, reject) => {
+            let image = new Image();
+            image.addEventListener('load', e => resolve(image));
+            image.addEventListener('error', reject);
+            image.src = uri;
+        });
+    }
+
+    loadJson(uri) {
+        return fetch(uri).then(response => response.json());
+    }*/
+    //-----------------------bloom-----------------------
 }

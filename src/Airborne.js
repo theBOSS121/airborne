@@ -164,7 +164,7 @@ class Airborne extends Application {
 
         this.physics = new Physics(this.root);
         
-        this.physics = new Physics(this.root);
+        //this.physics = new Physics(this.root);
     }
 
     update(dt) {
@@ -177,6 +177,12 @@ class Airborne extends Application {
         this.physics.update(dt);
         
         this.light.translation = this.light.position;
+
+        //-----------------------bloom-----------------------
+        //this.renderer.createBloomBuffers();
+        //-----------------------bloom-----------------------
+
+
         // rotation and position of boxes should be set at init
         // update should only track and set changes
         // const t1 = this.cube1.localMatrix;
@@ -230,6 +236,10 @@ class Airborne extends Application {
         // const far = Math.sqrt(2 * Math.pow(150, 2));
         const far = 1000
         mat4.perspective(this.camera.projection, fovy, aspect, near, far);
+
+        //-----------------------bloom-----------------------
+        //this.renderer.resize(w, h);
+        //-----------------------bloom-----------------------
     }
 }
 
