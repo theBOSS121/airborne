@@ -80,9 +80,4 @@ export class Application {
     render() {}
     // resize code (e.g. update projection matrix)
     resize() {}
-    
-    intervalIntersection(){}
-    aabbIntersection(){}
-    getTransformedAABB(){}
-    resolveCollision(){}
 }
