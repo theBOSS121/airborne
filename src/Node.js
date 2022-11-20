@@ -137,5 +137,4 @@ export class Node {
         }
         if (after) after(this);
     }
-
 }

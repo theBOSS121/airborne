@@ -16,13 +16,13 @@ export class GLTFNodes {
     // }
 
     // traverseNode(node, before, after) {
-    //    if (before) {
+    //     if (before) {
     //         before(node);
     //     }
     //     for (const child of node.children) {
     //         this.traverseNode(child, before, after);
     //     }
-    //    if (after) {
+    //     if (after) {
     //         after(node);
     //     }
     // }
