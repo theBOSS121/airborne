@@ -10,14 +10,25 @@
     <script type="module" src="./src/Airborne.js"></script>
 </head>
 <body>
+    <div class="player-container">
+        <p class="speedometer"><span>0</span> km/h</p>
+        <div class="fuelbar"></div>
+        <p class="playtime"><span>0</span> s</p>
+    </div>
+    <div class="fullscreen game-over-container game-container">
+        <p>Game over</p>
+    </div>
+    <div class="fullscreen pause-container game-container">
+        <p>Left click to <span>start</span></p>
+    </div>
     <div class="fullscreen no-touch">
         <canvas></canvas>
-    </div>
-    <div class="overlay">
-        <a class="back" href="./index.html">Reload</a>
     </div>
     <div class="fullscreen overlay loader-container">
         <div class="loader"></div>
     </div>
+    <!-- <div class="overlay">
+        <a class="back" href="./index.html">Reload</a>
+    </div> -->
 </body>
 </html>

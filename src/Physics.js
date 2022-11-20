@@ -2,24 +2,27 @@ import { vec3, mat4 } from '../lib/gl-matrix-module.js';
 
 export class Physics {
 
-    constructor(scene) {
-        this.scene = scene;
+    constructor(root) {
+        this.root = root;
     }
 
-    update(dt, cameraController) {
-        if(cameraController.velocity){
-            this.scene.traverse(node => {
-                // Move every node with defined velocity.
-                    vec3.scaleAndAdd(node.translation, node.translation, cameraController.velocity, dt);
-                    node.updateTransformationMatrix(); 
-                    // After moving, check for collision with every other node.
-                    this.scene.traverse(other => {
-                        if (node !== other) {
-                            this.resolveCollision(node, other);
-                        }
-                    });
-            });
-        }
+    update(dt) {
+        this.root.traverse(node => {
+             
+            // Move every node with defined velocity.0];
+            if (node.velocity) {
+                node.translation = vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
+                node.updateTransformationMatrix();
+
+                // After moving, check for collision with every other node.
+                this.root.traverse(other => {
+                    if (node !== other && node.collidable && other.collidable) {
+                        this.resolveCollision(node, other);
+                    }
+                });
+            }
+
+        });
     }
 
     intervalIntersection(min1, max1, min2, max2) {
@@ -35,9 +38,7 @@ export class Physics {
     getTransformedAABB(node) {
         // Transform all vertices of the AABB from local to global space.
         const transform = node.globalMatrix;
-        const min = node.minT;
-        const max = node.maxT;
-       
+        const { min, max } = node.aabb;
         const vertices = [
             [min[0], min[1], min[2]],
             [min[0], min[1], max[2]],
@@ -65,12 +66,12 @@ export class Physics {
 
         // Check if there is collision.
         const isColliding = this.aabbIntersection(aBox, bBox);
-        console.log(isColliding);
-        
         if (!isColliding) {
             return;
-        } 
-        
+        }else {
+            // console.log("collision")
+        }
+
         // Move node A minimally to avoid collision.
         const diffa = vec3.sub(vec3.create(), bBox.max, aBox.min);
         const diffb = vec3.sub(vec3.create(), aBox.max, bBox.min);
@@ -102,8 +103,8 @@ export class Physics {
             minDirection = [0, 0, -minDiff];
         }
 
-        vec3.add(a.translation, a.translation, minDirection);
-        a.updateTransformationMatrix();
+        a.translation = [a.translation[0] + minDirection[0],a.translation[1] + minDirection[1],a.translation[2] + minDirection[2]]
+        a.transformationMatrixNeedsUpdate = true
     }
-    
+
 }

@@ -1,6 +1,12 @@
 import { Renderer } from './Renderer.js';
 
 // Abstraction of aplication (Airborne.js extends Aplication class)
+export const GameState = {
+    GAME_OVER: 0,
+    PLAYING: 1,
+    PAUSED: 2,
+    START: 3,
+}
 export class Application {
     
     constructor(canvas, glOptions) {
@@ -13,8 +19,11 @@ export class Application {
         this.time = performance.now();
         this.prevTime = this.time;
         this.renderer = new Renderer(this.gl);
-
+        this.state = GameState.PAUSED;
+        
+        
         await this.start(); // init/start game before game loop starts
+
         requestAnimationFrame(this._update); // start game loop
     }
     // webgl initialization
@@ -25,16 +34,25 @@ export class Application {
         } catch (error) {}
         if (!this.gl) throw Error('Cannot create WebGL 2.0 context');
     }
+
     // game loop
-    _update() {
+    _update({wasPaused = false}) {
+  
+
         this.time = performance.now(); // get current time in millisecondes (with fractions)
-        const dt = (this.time - this.prevTime) * 0.001; // change of time between updates in seconde
+        let dt = (this.time - this.prevTime) * 0.001; // change of time between updates in seconds
+        if (wasPaused) dt = 0;
         this.prevTime = this.time;
-        this._resize();
-        this.update(dt);
         this.render();
+        this._resize();
+        this.update(this.state == GameState.PLAYING ? dt : 0); // if the game is not in playing mode, don't update anything, but still render
+         
         requestAnimationFrame(this._update);
+
     }
+
+
+
     // resize if canvas width/height has changed
     _resize() {
         const canvas = this.canvas;
