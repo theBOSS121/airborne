@@ -111,8 +111,6 @@ class Airborne extends Application {
         this.fuel = await this.loader.loadGLTFNodes(this.loader.defaultScene);
         this.renderer.prepareGLTFNodes(this.fuel);
 
-        this.physics = new Physics(this.scene);
-
         // this is root of all objects
 
         // GLTF objects
