@@ -6,6 +6,8 @@ export class Physics {
 
     constructor(root) {
         this.root = root;
+
+        this.gameOverAudio = new Audio('../res/audio/explosion.mp3');
     }
 
     update(dt) {
@@ -87,6 +89,7 @@ export class Physics {
                 } 
             // console.log("collision")
             } else if (collisionNodesTypes.some(nt => nt == NodeType.PLAYER)) {
+                this.gameOverAudio.play();
                 app.gameOver();
             }
         }

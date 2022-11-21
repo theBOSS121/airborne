@@ -13,6 +13,8 @@ export class FuelController {
         this.fuels = [];
         this.fuelValue = fuelValue;
 
+        this.audio = new Audio('../res/audio/boost.mp3');
+
         this.cube = cube;
         this.grass = grass;
     }
@@ -38,6 +40,7 @@ export class FuelController {
     }
 
     async pickedUp(fuelNode) {
+        this.audio.play();
         this.removeFuel(fuelNode);
         app.playerController.fuel += this.fuelValue;
     }

@@ -1,5 +1,5 @@
 import { GUI } from '../lib/dat.gui.module.js'
-import { mat4 } from '../lib/gl-matrix-module.js';
+import { mat4, vec3 } from '../lib/gl-matrix-module.js';
 import { Application, GameState } from './Application.js'
 import { Node } from './Node.js';
 import { PlayerController } from './PlayerController.js';
@@ -26,7 +26,7 @@ class Airborne extends Application {
             this.renderer.loadTexture('./res/images/sky2.jpg', { min: this.gl.LINEAR, mag: this.gl.LINEAR }),
             this.renderer.loadTexture('./res/images/grass.png', { mip: true, min: this.gl.NEAREST_MIPMAP_NEAREST, mag: this.gl.NEAREST }),
         ]);
-        
+
         // root
         this.root = new Node();
         this.physics = new Physics(this.root);
@@ -50,7 +50,7 @@ class Airborne extends Application {
         // light / sun
         this.light = new Node();
         this.root.addChild(this.light);
-        this.light.position = [0, 125, 0];
+        this.light.translation = [0, 125, 0];
         this.light.color = [237, 205, 459];
         this.light.intensity = 5000;
         this.light.attenuation = [0.01, 0.2, 0.2];
@@ -58,10 +58,10 @@ class Airborne extends Application {
         
 
         // airplane - camera connector
-        this.connector = new Node();
-        this.connector.nodeType = NodeType.PLAYER;
-        this.root.addChild(this.connector);
-        this.connector.itisfuckingstupid = 'connector'
+        // this.connector = new Node();
+        // this.connector.nodeType = NodeType.PLAYER;
+        // this.root.addChild(this.connector);
+        // this.connector.itisfuckingstupid = 'connector'
 
 
         // airplane
@@ -75,25 +75,24 @@ class Airborne extends Application {
             transmittance : 0.3,
             ior : 0.99,
         }); 
-
-        this.airplane.nodes[0].scale = [1, 1, 1];
         this.renderer.prepareGLTFNodes(this.airplane);
+        this.airplane.nodes[0].translation = [-10, 100, -10]
+        this.airplane.nodes[0].nodeType = NodeType.PLAYER;
         // this.airplane.nodes[0].createBoundingBox(cube, grass);
-        this.connector.translation = [-10, 10, 10]
-        this.connector.addChild(this.airplane);
+        this.root.addChild(this.airplane);
         
 
         // camera
         this.camera = new Node();
         this.camera.collidable = false;
         this.camera.projection = mat4.create();
-        this.connector.addChild(this.camera);
+        this.root.addChild(this.camera);
 
         // initialize player controller
-        this.playerController = new PlayerController(this.connector, this.airplane.nodes[0], this.camera, this.canvas);
+        this.playerController = new PlayerController(this.airplane.nodes[0], this.camera, this.canvas);
 
         // initialize fuel controller
-        this.fuelController = new FuelController(this.root, this.renderer, this.loader, 3, 8, 0.25, cube, grass);
+        this.fuelController = new FuelController(this.root, this.renderer, this.loader, 4, 8, 0.25, cube, grass);
         await this.fuelController.loadNodes();
 
         // initialize clouds controller
@@ -108,29 +107,13 @@ class Airborne extends Application {
     }
 
     update(dt) {
-        // this.island.nodes[0].rotation = quat.rotateY(this.island.nodes[0].rotation, this.island.nodes[0].rotation, dt)
-        
+        if (this.state == GameState.GAME_OVER) return;
         this.playerController.update(dt);
         this.fuelController.update(dt);
         this.cloudController.update(dt);
         this.physics.update(dt);
         
-        this.light.translation = this.light.position;
-        // rotation and position of boxes should be set at init
-        // update should only track and set changes
-        // const t1 = this.cube1.localMatrix;
-        // mat4.fromTranslation(t1, [-2, 1, -5]);
-        // mat4.rotateX(t1, t1, this.leftRotation);
-        // this.cube1.localMatrix = t1
-        // const t2 = this.cube2.localMatrix;
-        // mat4.fromTranslation(t2, [2, 1, -5]);
-        // mat4.rotateX(t2, t2, this.rightRotation);
-        // this.cube2.localMatrix = t2
-        // const t3 = this.cube3.localMatrix;
-        // mat4.fromTranslation(t3, [-1, 2, -3]);
-        // mat4.rotateY(t3, t3, 1);
-        // this.cube3.localMatrix = t3
-        // console.log(this.fuel.nodes[0].translation[2])
+        vec3.add(this.light.translation, this.light.translation, vec3.clone([dt*1000, 0, 0]));
     }
 
     toggleGameState() {
