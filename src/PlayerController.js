@@ -140,7 +140,7 @@ export class PlayerController {
         const airplaneRotation = quat.create();
         quat.rotateY(airplaneRotation, airplaneRotation, this.eulerRotation[1]);
         quat.rotateZ(airplaneRotation, airplaneRotation, this.eulerRotation[2]);
-        quat.slerp(airplaneRotation, airplaneRotation, this.airplaneNode.rotation, 0.98);
+        quat.slerp(airplaneRotation, airplaneRotation, this.airplaneNode.rotation, 0.9912);
         this.airplaneNode.rotation = airplaneRotation;
     }
 
@@ -152,7 +152,7 @@ export class PlayerController {
         const translationVector = vec3.clone(this.cameraOffset);
         vec3.rotateZ(translationVector, translationVector, vec3.clone([0, 0, 0]), this.eulerRotation[2]);
         vec3.rotateY(translationVector, translationVector, vec3.clone([0, 0, 0]), this.eulerRotation[1]);
-        vec3.lerp(translationVector, translationVector, this.oldTranslationVector, 0.98);
+        vec3.lerp(translationVector, translationVector, this.oldTranslationVector, 0.99);
         this.oldTranslationVector = translationVector;
 
         const correctedTranslationVector = vec3.create();
