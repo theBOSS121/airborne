@@ -2,9 +2,15 @@ import { vec3, mat4, quat } from '../lib/gl-matrix-module.js';
 import { GLTFNodes } from './GLTFNodes.js';
 import { Material } from './Material.js';
 
+export const NodeType = {
+    PLAYER: 0,
+    FUEL: 1,
+}
+
 export class Node {
 
     constructor(options = {}) {
+
         this._translation = options.translation ? vec3.clone(options.translation) : vec3.fromValues(0, 0, 0);
         this._rotation = options.rotation ? quat.clone(options.rotation) : quat.fromValues(0, 0, 0, 1);
         this._scale = options.scale ? vec3.clone(options.scale) : vec3.fromValues(1, 1, 1);
@@ -34,11 +40,11 @@ export class Node {
         this.collidable = options.collidable == false ? false : true
     }
 
-    createBoundingBox(model, texture) {
+    createBoundingBox(model) {
         this.boundingBox = new Node();        
         this.boundingBox.model = model;
         this.boundingBox.material = new Material({ }, null);
-        this.boundingBox.material.texture = texture;
+        // this.boundingBox.material.texture = texture;
         this.boundingBox.scale = [(this.aabb.max[0]-this.aabb.min[0])/2,(this.aabb.max[1]-this.aabb.min[1])/2,(this.aabb.max[2]-this.aabb.min[2])/2]
     }
 
@@ -118,6 +124,7 @@ export class Node {
 
     removeChild(node) {
         const index = this.children.indexOf(node);
+        console.log(index)
         if (index >= 0) {
             this.children.splice(index, 1);
             node.parent = null;
