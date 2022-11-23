@@ -135,7 +135,6 @@ export class PlayerController {
         if (speed < this.MAX_SPEED) this.airplaneNode.velocity = vec3.scaleAndAdd(vec3.create(), this.airplaneNode.velocity, acc, dt * this.acceleration);
         if (speed > this.MIN_SPEED) this.airplaneNode.velocity = vec3.scale(this.airplaneNode.velocity, this.airplaneNode.velocity, this.decay);
 
-        
         // rotation
         const airplaneRotation = quat.create();
         quat.rotateY(airplaneRotation, airplaneRotation, this.eulerRotation[1]);
@@ -145,9 +144,7 @@ export class PlayerController {
     }
 
     updateCamera(dt) {
-
         const lerpValue = 0.98 * 120 * dt // value is going to equal 0.98 at 30fps 
-        console.log(lerpValue)
         // translation
         const translationVector = vec3.clone(this.cameraOffset);
         vec3.rotateZ(translationVector, translationVector, vec3.clone([0, 0, 0]), this.eulerRotation[2]);

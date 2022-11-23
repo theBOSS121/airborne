@@ -21,6 +21,77 @@ export class Renderer {
 
         this.defaultTexture = WebGL.createTexture(gl, { width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) });
         this.defaultSampler = WebGL.createSampler(gl, { min: gl.NEAREST, mag: gl.NEAREST, wrapS: gl.CLAMP_TO_EDGE, wrapT: gl.CLAMP_TO_EDGE });
+
+
+        // sky (Nishita)
+        gl.getExtension('EXT_color_buffer_float');
+        gl.getExtension('OES_texture_float_linear');
+
+        Object.assign(this, {
+            // geometry
+            planetRadius: 6360e3,
+            atmosphereRadius: 6420e3,
+            cameraAltitude: 100,
+            sunHeight: 0.02,
+
+            // physics
+            sunIntensity: 20,
+            mieScatteringAnisotropy: 0.76,
+            mieScatteringCoefficient: [21e-6, 21e-6, 21e-6],
+            mieDensityScale: 400,
+            rayleighScatteringCoefficient: [3.8e-6, 13.5e-6, 33.1e-6],
+            rayleighDensityScale: 2000,
+
+            // integration
+            primaryRaySamples: 32,
+            secondaryRaySamples: 8,
+        });
+        
+        this.createSkyBuffer();
+    }
+
+    // sky (Nishita)
+    createSkyBuffer() {
+        const gl = this.gl;
+
+        if (this.sky) {
+            gl.deleteFramebuffer(this.sky.framebuffer);
+            gl.deleteTexture(this.sky.texture);
+        }
+
+        const size = {
+            width: 512,
+            height: 512,
+        };
+
+        const sampling = {
+            min: gl.LINEAR,
+            mag: gl.LINEAR,
+            wrapS: gl.CLAMP_TO_EDGE,
+            wrapT: gl.CLAMP_TO_EDGE,
+        };
+
+        const format = {
+            format: gl.RGBA,
+            iformat: gl.RGBA16F,
+            type: gl.FLOAT,
+        };
+
+        const texture = WebGL.createTexture(gl, {
+            ...size,
+            ...sampling,
+            ...format,
+        });
+
+        const framebuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+        this.sky = {
+            texture,
+            framebuffer,
+            size,
+        };
     }
 
     render(rootNode, camera, light, skybox) {
@@ -28,7 +99,11 @@ export class Renderer {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         // render Skybox / environment
-        this.renderSkybox(skybox, camera);
+        // this.renderSkybox(skybox, camera);
+        // sky (Nishita)
+        this.renderNishita();
+        this.renderSkyboxNishita(camera);
+
 
         const { program, uniforms } = this.programs.perFragmentWithEnvmap;
         gl.useProgram(program);
@@ -45,7 +120,7 @@ export class Renderer {
         gl.uniform3fv(uniforms.uLight.attenuation, light.attenuation);
 
         // const mvpMatrix = this.getViewProjectionMatrix(camera);
-        this.renderChildren(rootNode, rootNode.globalMatrix)        
+        this.renderChildren(rootNode, rootNode.globalMatrix)
     }
 
     // render children recursively
@@ -106,9 +181,9 @@ export class Renderer {
         const { program, uniforms } = this.programs.perFragmentWithEnvmap;
 
         if(node.boundingBox) {
-            gl.disable(gl.DEPTH_TEST); // disable CULL_FACE
+            gl.disable(gl.DEPTH_TEST);
             this.renderNode(node.boundingBox, modelMatrix)
-            gl.enable(gl.DEPTH_TEST); // disable CULL_FACE
+            gl.enable(gl.DEPTH_TEST); 
         }
         if (node.mesh) { // gltf objects only drawing
             // set modelMatrix uniform
@@ -142,7 +217,8 @@ export class Renderer {
 
         // set envorionment texture and uniform
         gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, primitive.material.envmap);
+        // gl.bindTexture(gl.TEXTURE_2D, primitive.material.envmap);
+        gl.bindTexture(gl.TEXTURE_2D, this.sky.texture);
         gl.uniform1i(uniforms.uEnvmap, 1);        
         // set material uniforms for material reflection/refration
         gl.uniform1f(uniforms.uReflectance, primitive.material.reflectance);
@@ -188,6 +264,69 @@ export class Renderer {
         gl.drawElements(gl.TRIANGLES, skybox.model.indices, gl.UNSIGNED_SHORT, 0); // draw skybox
         gl.enable(gl.CULL_FACE); // unset/enable CULL_FACE
         gl.depthFunc(gl.LESS); // unset depth function to <
+    }
+
+    renderNishita() {
+        const gl = this.gl;
+
+        const { framebuffer, size } = this.sky;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.viewport(0, 0, size.width, size.height);
+
+        const { program, uniforms } = this.programs.nishita;
+        gl.useProgram(program);
+
+        // geometry
+        gl.uniform1f(uniforms.uPlanetRadius, this.planetRadius);
+        gl.uniform1f(uniforms.uAtmosphereRadius, this.atmosphereRadius);
+        gl.uniform1f(uniforms.uCameraAltitude, this.cameraAltitude);
+        const sunAngle = this.sunHeight * Math.PI / 2;
+        gl.uniform3fv(uniforms.uSunDirection, [0, Math.sin(sunAngle), Math.cos(sunAngle)]);
+
+        // physics
+        gl.uniform1f(uniforms.uSunIntensity, this.sunIntensity);
+        gl.uniform1f(uniforms.uMieScatteringAnisotropy, this.mieScatteringAnisotropy);
+        gl.uniform3fv(uniforms.uMieScatteringCoefficient, this.mieScatteringCoefficient);
+        gl.uniform1f(uniforms.uMieDensityScale, this.mieDensityScale);
+        gl.uniform3fv(uniforms.uRayleighScatteringCoefficient, this.rayleighScatteringCoefficient);
+        gl.uniform1f(uniforms.uRayleighDensityScale, this.rayleighDensityScale);
+
+        // integration
+        gl.uniform1ui(uniforms.uPrimaryRaySamples, this.primaryRaySamples);
+        gl.uniform1ui(uniforms.uSecondaryRaySamples, this.secondaryRaySamples);
+
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    renderSkyboxNishita(camera) {
+        const gl = this.gl;
+
+        const { program, uniforms } = this.programs.skyboxNishita;
+        gl.useProgram(program);
+
+        const viewMatrix = camera.globalMatrix;
+        const unprojectMatrix = mat4.clone(camera.projection);
+        mat4.invert(unprojectMatrix, unprojectMatrix);
+        mat4.multiply(unprojectMatrix, viewMatrix, unprojectMatrix);
+
+        gl.uniformMatrix4fv(uniforms.uUnprojectMatrix, false, unprojectMatrix);
+
+        const size = {
+            width: gl.drawingBufferWidth,
+            height: gl.drawingBufferHeight,
+        };
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, size.width, size.height);
+
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this.sky.texture);
+        gl.uniform1i(uniforms.uSkybox, 1);
+        
+        
+        gl.disable(gl.DEPTH_TEST); 
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.enable(gl.DEPTH_TEST); 
     }
 
     // ----------------------------------------

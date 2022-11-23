@@ -31,7 +31,7 @@ class Airborne extends Application {
         this.root = new Node();
         this.physics = new Physics(this.root);
 
-        
+        // env map is not used if we are using nishita sky (insted of envmap)
         // loading scene
         this.loader = new GLTFLoader(envmap),
         await this.loader.load('../res/scena/scena.gltf');
@@ -179,3 +179,22 @@ async function restart() {
 const guiParentElement = document.querySelector('.player-container');
 guiParentElement.style.display = 'flex';
 app.playerController.fuelElement.startWidth = document.querySelector('.fuelbar').offsetWidth;
+
+
+const gui = new GUI();
+
+// geometry
+gui.add(app.renderer, 'planetRadius', 5000e3, 10000e3);
+gui.add(app.renderer, 'atmosphereRadius', 5000e3, 10000e3);
+gui.add(app.renderer, 'cameraAltitude', 1, 50e3);
+gui.add(app.renderer, 'sunHeight', 0, 1);
+
+// physics
+gui.add(app.renderer, 'sunIntensity', 0, 50);
+gui.add(app.renderer, 'mieScatteringAnisotropy', -1, 1);
+gui.add(app.renderer, 'mieDensityScale', 0, 20000);
+gui.add(app.renderer, 'rayleighDensityScale', 0, 20000);
+
+// integration
+gui.add(app.renderer, 'primaryRaySamples', 1, 64).step(1);
+gui.add(app.renderer, 'secondaryRaySamples', 1, 64).step(1);
