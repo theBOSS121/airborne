@@ -41,6 +41,77 @@ export class Renderer {
 
         this.defaultTexture = WebGL.createTexture(gl, { width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) });
         this.defaultSampler = WebGL.createSampler(gl, { min: gl.NEAREST, mag: gl.NEAREST, wrapS: gl.CLAMP_TO_EDGE, wrapT: gl.CLAMP_TO_EDGE });
+
+
+        // sky (Nishita)
+        gl.getExtension('EXT_color_buffer_float');
+        gl.getExtension('OES_texture_float_linear');
+
+        Object.assign(this, {
+            // geometry
+            planetRadius: 6360e3,
+            atmosphereRadius: 6420e3,
+            cameraAltitude: 100,
+            sunHeight: 0.02,
+
+            // physics
+            sunIntensity: 20,
+            mieScatteringAnisotropy: 0.76,
+            mieScatteringCoefficient: [21e-6, 21e-6, 21e-6],
+            mieDensityScale: 400,
+            rayleighScatteringCoefficient: [3.8e-6, 13.5e-6, 33.1e-6],
+            rayleighDensityScale: 2000,
+
+            // integration
+            primaryRaySamples: 32,
+            secondaryRaySamples: 8,
+        });
+        
+        this.createSkyBuffer();
+    }
+
+    // sky (Nishita)
+    createSkyBuffer() {
+        const gl = this.gl;
+
+        if (this.sky) {
+            gl.deleteFramebuffer(this.sky.framebuffer);
+            gl.deleteTexture(this.sky.texture);
+        }
+
+        const size = {
+            width: 512,
+            height: 512,
+        };
+
+        const sampling = {
+            min: gl.LINEAR,
+            mag: gl.LINEAR,
+            wrapS: gl.CLAMP_TO_EDGE,
+            wrapT: gl.CLAMP_TO_EDGE,
+        };
+
+        const format = {
+            format: gl.RGBA,
+            iformat: gl.RGBA16F,
+            type: gl.FLOAT,
+        };
+
+        const texture = WebGL.createTexture(gl, {
+            ...size,
+            ...sampling,
+            ...format,
+        });
+
+        const framebuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+        this.sky = {
+            texture,
+            framebuffer,
+            size,
+        };
     }
 
     render(rootNode, camera, light, skybox) {
@@ -54,7 +125,11 @@ export class Renderer {
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         // render Skybox / environment
-        this.renderSkybox(skybox, camera);
+        // this.renderSkybox(skybox, camera);
+        // sky (Nishita)
+        this.renderNishita();
+        this.renderSkyboxNishita(camera);
+
 
         const { program, uniforms } = this.programs.perFragmentWithEnvmap;
         gl.useProgram(program);
@@ -71,7 +146,7 @@ export class Renderer {
         gl.uniform3fv(uniforms.uLight.attenuation, light.attenuation);
 
         // const mvpMatrix = this.getViewProjectionMatrix(camera);
-        this.renderChildren(rootNode, rootNode.globalMatrix)        
+        this.renderChildren(rootNode, rootNode.globalMatrix)
     }
 
     // render children recursively
@@ -132,9 +207,9 @@ export class Renderer {
         const { program, uniforms } = this.programs.perFragmentWithEnvmap;
 
         if(node.boundingBox) {
-            gl.disable(gl.DEPTH_TEST); // disable CULL_FACE
+            gl.disable(gl.DEPTH_TEST);
             this.renderNode(node.boundingBox, modelMatrix)
-            gl.enable(gl.DEPTH_TEST); // disable CULL_FACE
+            gl.enable(gl.DEPTH_TEST); 
         }
         if (node.mesh) { // gltf objects only drawing
             // set modelMatrix uniform
@@ -168,7 +243,8 @@ export class Renderer {
 
         // set envorionment texture and uniform
         gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, primitive.material.envmap);
+        // gl.bindTexture(gl.TEXTURE_2D, primitive.material.envmap);
+        gl.bindTexture(gl.TEXTURE_2D, this.sky.texture);
         gl.uniform1i(uniforms.uEnvmap, 1);        
         // set material uniforms for material reflection/refration
         gl.uniform1f(uniforms.uReflectance, primitive.material.reflectance);
@@ -216,129 +292,50 @@ export class Renderer {
         gl.depthFunc(gl.LESS); // unset depth function to <
     }
 
-    //-----------------------bloom-----------------------
-    /*
-    resize(width, height) {
-        this.createGeometryBuffer();
-        this.createBloomBuffers();
-    }
-
-    renderGeometry(scene, camera) {
+    renderNishita() {
         const gl = this.gl;
 
-        const size = {
-            width: gl.drawingBufferWidth,
-            height: gl.drawingBufferHeight,
-        };
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.geometryBuffer.framebuffer);
+        const { framebuffer, size } = this.sky;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         gl.viewport(0, 0, size.width, size.height);
 
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        const { program, uniforms } = this.programs.renderGeometryBuffer;
+        const { program, uniforms } = this.programs.nishita;
         gl.useProgram(program);
 
-        const matrix = mat4.create();
+        // geometry
+        gl.uniform1f(uniforms.uPlanetRadius, this.planetRadius);
+        gl.uniform1f(uniforms.uAtmosphereRadius, this.atmosphereRadius);
+        gl.uniform1f(uniforms.uCameraAltitude, this.cameraAltitude);
+        const sunAngle = this.sunHeight * Math.PI / 2;
+        gl.uniform3fv(uniforms.uSunDirection, [0, Math.sin(sunAngle), Math.cos(sunAngle)]);
+
+        // physics
+        gl.uniform1f(uniforms.uSunIntensity, this.sunIntensity);
+        gl.uniform1f(uniforms.uMieScatteringAnisotropy, this.mieScatteringAnisotropy);
+        gl.uniform3fv(uniforms.uMieScatteringCoefficient, this.mieScatteringCoefficient);
+        gl.uniform1f(uniforms.uMieDensityScale, this.mieDensityScale);
+        gl.uniform3fv(uniforms.uRayleighScatteringCoefficient, this.rayleighScatteringCoefficient);
+        gl.uniform1f(uniforms.uRayleighDensityScale, this.rayleighDensityScale);
+
+        // integration
+        gl.uniform1ui(uniforms.uPrimaryRaySamples, this.primaryRaySamples);
+        gl.uniform1ui(uniforms.uSecondaryRaySamples, this.secondaryRaySamples);
+
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    renderSkyboxNishita(camera) {
+        const gl = this.gl;
+
+        const { program, uniforms } = this.programs.skyboxNishita;
+        gl.useProgram(program);
+
         const viewMatrix = camera.globalMatrix;
-        mat4.invert(viewMatrix, viewMatrix);
-        mat4.mul(matrix, camera.projection, viewMatrix);
+        const unprojectMatrix = mat4.clone(camera.projection);
+        mat4.invert(unprojectMatrix, unprojectMatrix);
+        mat4.multiply(unprojectMatrix, viewMatrix, unprojectMatrix);
 
-        gl.uniform1f(uniforms.uEmissionStrength, this.emissionStrength);
-        gl.uniform1f(uniforms.uExposure, this.preExposure);
-
-        for (const node of scene.children) {
-            this.renderNodeB(node, matrix, uniforms);
-        }
-    }
-
-
-    renderBright() {
-        const gl = this.gl;
-
-        console.log(this.bloomBuffers);
-        const { framebuffer, size } = this.bloomBuffers[0];
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.viewport(0, 0, size.width, size.height);
-
-        const { program, uniforms } = this.programs.renderBright;
-        gl.useProgram(program);
-
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.colorTexture);
-        gl.uniform1i(uniforms.uColor, 0);
-
-        gl.uniform1f(uniforms.uBloomThreshold, this.bloomThreshold);
-        gl.uniform1f(uniforms.uBloomKnee, this.bloomKnee);
-
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-    }
-
-    renderBloom() {
-        const gl = this.gl;
-
-        const levels = this.bloomBuffers.length;
-
-        for (let i = 1; i < levels; i++) {
-            const { framebuffer, size } = this.bloomBuffers[i];
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.viewport(0, 0, size.width, size.height);
-
-            const { program, uniforms } = this.programs.downsampleAndBlur;
-            gl.useProgram(program);
-
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[i - 1].texture);
-            gl.uniform1i(uniforms.uColor, 0);
-
-            gl.drawArrays(gl.TRIANGLES, 0, 3);
-        }
-
-        gl.enable(gl.BLEND);
-        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ZERO);
-
-        for (let i = levels - 2; i >= 0; i--) {
-            const { framebuffer, size } = this.bloomBuffers[i];
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.viewport(0, 0, size.width, size.height);
-
-            const { program, uniforms } = this.programs.upsampleAndCombine;
-            gl.useProgram(program);
-
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[i + 1].texture);
-            gl.uniform1i(uniforms.uColor, 0);
-
-            gl.uniform1f(uniforms.uBloomIntensity, this.bloomIntensity);
-
-            gl.drawArrays(gl.TRIANGLES, 0, 3);
-        }
-
-        gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ZERO);
-
-        const { framebuffer, size } = this.bloomBuffers[0];
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.viewport(0, 0, size.width, size.height);
-
-        const { program, uniforms } = this.programs.upsampleAndCombine;
-        gl.useProgram(program);
-
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.geometryBuffer.colorTexture);
-        gl.uniform1i(uniforms.uColor, 0);
-
-        gl.uniform1f(uniforms.uBloomIntensity, 1);
-
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-
-        gl.disable(gl.BLEND);
-    }
-
-    renderToCanvas() {
-        const gl = this.gl;
+        gl.uniformMatrix4fv(uniforms.uUnprojectMatrix, false, unprojectMatrix);
 
         const size = {
             width: gl.drawingBufferWidth,
@@ -348,150 +345,15 @@ export class Renderer {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, size.width, size.height);
 
-        const { program, uniforms } = this.programs.renderToCanvas;
-        gl.useProgram(program);
-
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.bloomBuffers[0].texture);
-        gl.uniform1i(uniforms.uColor, 0);
-
-        gl.uniform1f(uniforms.uExposure, this.postExposure);
-        gl.uniform1f(uniforms.uGamma, this.gamma);
-
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this.sky.texture);
+        gl.uniform1i(uniforms.uSkybox, 1);
+        
+        
+        gl.disable(gl.DEPTH_TEST); 
         gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.enable(gl.DEPTH_TEST); 
     }
-
-
-    renderNodeB(node, matrix, uniforms) {
-        const gl = this.gl;
-
-        matrix = mat4.clone(matrix);
-        mat4.mul(matrix, matrix, node.localMatrix);
-
-        if (node.mesh) {
-            gl.bindVertexArray(node.mesh.vao);
-            gl.uniformMatrix4fv(uniforms.uProjectionViewModel, false, matrix);
-
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, node.diffuseTexture);
-            gl.uniform1i(uniforms.uDiffuse, 0);
-
-            gl.activeTexture(gl.TEXTURE1);
-            gl.bindTexture(gl.TEXTURE_2D, node.emissionTexture);
-            gl.uniform1i(uniforms.uEmission, 1);
-
-            gl.drawElements(gl.TRIANGLES, node.mesh.indices, gl.UNSIGNED_SHORT, 0);
-        }
-
-        for (const child of node.children) {
-            this.renderNodeB(child, matrix, uniforms);
-        }
-    }
-
-    createGeometryBuffer() {
-        const gl = this.gl;
-
-        if (this.geometryBuffer) {
-            gl.deleteFramebuffer(this.geometryBuffer.framebuffer);
-            gl.deleteRenderbuffer(this.geometryBuffer.depthBuffer);
-            gl.deleteTexture(this.geometryBuffer.colorTexture);
-        }
-
-        const size = {
-            width: gl.drawingBufferWidth,
-            height: gl.drawingBufferHeight,
-        };
-
-        const sampling = {
-            min: gl.LINEAR,
-            mag: gl.LINEAR,
-            wrapS: gl.CLAMP_TO_EDGE,
-            wrapT: gl.CLAMP_TO_EDGE,
-        };
-
-        const depthBuffer = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, size.width, size.height);
-
-        const colorTexture = WebGL.createTexture(gl, {
-            ...size,
-            ...sampling,
-            format: gl.RGBA,
-            iformat: gl.RGBA16F,
-            type: gl.FLOAT,
-        });
-
-        const framebuffer = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, colorTexture, 0);
-
-        gl.drawBuffers([
-            gl.COLOR_ATTACHMENT0,
-        ]);
-
-        this.geometryBuffer = {
-            framebuffer,
-            depthBuffer,
-            colorTexture,
-        };
-    }
-
-
-    createBloomBuffers() {
-        const gl = this.gl;
-
-        for (const buffer of this.bloomBuffers) {
-            gl.deleteFramebuffer(buffer.framebuffer);
-            gl.deleteTexture(buffer.texture);
-        }
-
-        const sampling = {
-            min: gl.LINEAR,
-            mag: gl.LINEAR,
-            wrapS: gl.CLAMP_TO_EDGE,
-            wrapT: gl.CLAMP_TO_EDGE,
-        };
-
-        const format = {
-            format: gl.RGBA,
-            iformat: gl.RGBA16F,
-            type: gl.FLOAT,
-        };
-
-        function numberOfLevels(width, height) {
-            return Math.ceil(Math.log2(Math.max(width, height)));
-        }
-
-        function sizeAtLevel(level, baseWidth, baseHeight) {
-            return {
-                width: Math.max(1, Math.floor(baseWidth / (2 ** level))),
-                height: Math.max(1, Math.floor(baseHeight / (2 ** level))),
-            };
-        }
-
-        const levels = numberOfLevels(gl.drawingBufferWidth, gl.drawingBufferHeight);
-        this.bloomBuffers = new Array(levels).fill(0).map((_, level) => {
-            const size = sizeAtLevel(level, gl.drawingBufferWidth, gl.drawingBufferHeight);
-
-            const texture = WebGL.createTexture(gl, {
-                ...size,
-                ...sampling,
-                ...format,
-            });
-
-            const framebuffer = gl.createFramebuffer();
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-            return {
-                texture,
-                framebuffer,
-                size,
-            };
-        });
-    }*/
-    //-----------------------bloom-----------------------
 
     // ----------------------------------------
     // not gltf -------------------------------

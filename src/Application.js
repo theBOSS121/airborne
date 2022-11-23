@@ -37,8 +37,6 @@ export class Application {
 
     // game loop
     _update({wasPaused = false}) {
-  
-
         this.time = performance.now(); // get current time in millisecondes (with fractions)
         let dt = (this.time - this.prevTime) * 0.001; // change of time between updates in seconds
         if (wasPaused) dt = 0;
