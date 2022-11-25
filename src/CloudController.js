@@ -41,6 +41,7 @@ export class CloudController {
     }
 
     async spawnCloud() {
+        const cloudTransparency = Math.max(0.1, Math.random())
         const cloudNumber = Math.floor(Math.random() *  3) + 1;
         await this.loader.load('../res/cloud/cloud_' + cloudNumber + '.gltf');
         const cloud = await this.loader.loadGLTFNodes(this.loader.defaultScene, {
@@ -51,7 +52,7 @@ export class CloudController {
             reflectance : 0.01,
             transmittance : 1,
             ior : 1,
-            transparency : 0.9,
+            transparency : cloudTransparency,
         });
         this.renderer.prepareGLTFNodes(cloud);
         // this.root.addChild(cloud);
