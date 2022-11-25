@@ -42,6 +42,7 @@ export class Material {
         this.reflectance = options.reflectance || 1;
         this.transmittance = options.transmittance || 1;
         this.ior = options.ior || 1;
+        this.transparency = options.transparency || 1;
 
     }
 

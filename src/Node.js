@@ -5,12 +5,14 @@ import { Material } from './Material.js';
 export const NodeType = {
     PLAYER: 0,
     FUEL: 1,
+    CLOUD: 2,
+    UNKNOWN: 3
 }
 
 export class Node {
 
     constructor(options = {}) {
-
+        this.nodeType = options.nodeType ? options.nodeType : NodeType.UNKNOWN
         this._translation = options.translation ? vec3.clone(options.translation) : vec3.fromValues(0, 0, 0);
         this._rotation = options.rotation ? quat.clone(options.rotation) : quat.fromValues(0, 0, 0, 1);
         this._scale = options.scale ? vec3.clone(options.scale) : vec3.fromValues(1, 1, 1);
@@ -124,7 +126,6 @@ export class Node {
 
     removeChild(node) {
         const index = this.children.indexOf(node);
-        console.log(index)
         if (index >= 0) {
             this.children.splice(index, 1);
             node.parent = null;

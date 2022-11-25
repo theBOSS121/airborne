@@ -96,7 +96,7 @@ class Airborne extends Application {
         await this.fuelController.loadNodes();
 
         // initialize clouds controller
-        this.cloudController = new CloudController(this.root, this.renderer, this.loader, 12);
+        this.cloudController = new CloudController(this.root, this.airplane, this.renderer, this.loader, 12);
         await this.cloudController.loadNodes();
 
         // sky box

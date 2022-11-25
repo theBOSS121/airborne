@@ -2,6 +2,7 @@ import { mat4, vec3 } from '../lib/gl-matrix-module.js';
 import { WebGL } from './WebGL.js';
 import { shaders } from './shaders.js';
 import { GLTFNodes } from './GLTFNodes.js';
+import { NodeType } from './Node.js';
 
 // This class prepares all assets for use with WebGL
 // and takes care of rendering.
@@ -23,10 +24,13 @@ export class Renderer {
         this.defaultSampler = WebGL.createSampler(gl, { min: gl.NEAREST, mag: gl.NEAREST, wrapS: gl.CLAMP_TO_EDGE, wrapT: gl.CLAMP_TO_EDGE });
 
 
-        // sky (Nishita)
         gl.getExtension('EXT_color_buffer_float');
         gl.getExtension('OES_texture_float_linear');
+        // sky (Nishita)
+        this.prepareSkyNishita();
+    }
 
+    prepareSkyNishita() {        
         Object.assign(this, {
             // geometry
             planetRadius: 6360e3,
@@ -46,14 +50,15 @@ export class Renderer {
             primaryRaySamples: 32,
             secondaryRaySamples: 8,
         });
-        
+
         this.createSkyBuffer();
     }
 
     // sky (Nishita)
     createSkyBuffer() {
+        
         const gl = this.gl;
-
+        
         if (this.sky) {
             gl.deleteFramebuffer(this.sky.framebuffer);
             gl.deleteTexture(this.sky.texture);
@@ -103,15 +108,17 @@ export class Renderer {
         // sky (Nishita)
         this.renderNishita();
         this.renderSkyboxNishita(camera);
+        this.renderObjects(rootNode, camera, light);
+    }
 
-
+    renderObjects(rootNode, camera, light) {
+        const gl = this.gl;
         const { program, uniforms } = this.programs.perFragmentWithEnvmap;
         gl.useProgram(program);
 
         // set uniforms
         const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);
-        // mat4.mul(mvpMatrix, this.camera.projection, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uViewMatrix, false, viewMatrix);
         gl.uniformMatrix4fv(uniforms.uProjectionMatrix, false, camera.projection);
         gl.uniform3fv(uniforms.uCameraPosition, mat4.getTranslation(vec3.create(), camera.globalMatrix));
@@ -119,7 +126,6 @@ export class Renderer {
         gl.uniform3fv(uniforms.uLight.position, mat4.getTranslation(vec3.create(), light.globalMatrix));
         gl.uniform3fv(uniforms.uLight.attenuation, light.attenuation);
 
-        // const mvpMatrix = this.getViewProjectionMatrix(camera);
         this.renderChildren(rootNode, rootNode.globalMatrix)
     }
 
@@ -165,6 +171,8 @@ export class Renderer {
             gl.uniform1f(uniforms.uMaterial.diffuse, node.material.diffuse);
             gl.uniform1f(uniforms.uMaterial.specular, node.material.specular);
             gl.uniform1f(uniforms.uMaterial.shininess, node.material.shininess);
+            gl.uniform1f(uniforms.uTransparency, node.material.transparency);
+            
             // draw model
             gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
         }
@@ -174,12 +182,12 @@ export class Renderer {
     // rendering GLTF nodes/objects
     renderGLTFNode(node, modelMatrix) {
         const gl = this.gl;
-
+        
         modelMatrix = mat4.clone(modelMatrix);
         // multiply modelMatrix with localMatrix (children matrix is influenced be parent matrix)
         mat4.mul(modelMatrix, modelMatrix, node.localMatrix); 
         const { program, uniforms } = this.programs.perFragmentWithEnvmap;
-
+        
         if(node.boundingBox) {
             gl.disable(gl.DEPTH_TEST);
             this.renderNode(node.boundingBox, modelMatrix)
@@ -225,12 +233,12 @@ export class Renderer {
         gl.uniform1f(uniforms.uTransmittance, primitive.material.transmittance);
         gl.uniform1f(uniforms.uIOR, primitive.material.ior);
         gl.uniform1f(uniforms.uEffect, primitive.material.effect);
+        gl.uniform1f(uniforms.uTransparency, primitive.material.transparency);
         // set material uniforms for diffuse/specular light
         gl.uniform1f(uniforms.uMaterial.diffuse, primitive.material.diffuse);
         gl.uniform1f(uniforms.uMaterial.specular, primitive.material.specular);
         gl.uniform1f(uniforms.uMaterial.shininess, primitive.material.shininess);
-
-
+        
         if (primitive.indices) {
             const mode = primitive.mode;
             const count = primitive.indices.count;
