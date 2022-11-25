@@ -50,7 +50,7 @@ class Airborne extends Application {
         // light / sun
         this.light = new Node();
         this.root.addChild(this.light);
-        this.light.translation = [0, 125, 0];
+        this.light.translation = [0, 125, -300];
         this.light.color = [237, 205, 459];
         this.light.intensity = 5000;
         this.light.attenuation = [0.01, 0.2, 0.2];
@@ -112,8 +112,11 @@ class Airborne extends Application {
         this.fuelController.update(dt);
         this.cloudController.update(dt);
         this.physics.update(dt);
-        
-        vec3.add(this.light.translation, this.light.translation, vec3.clone([dt*1000, 0, 0]));
+
+        this.light.fi = this.time/5000;
+        this.light.intensity = Math.sin(this.light.fi) * 500000 + 505000
+        this.light.translation = [this.light.translation[0], Math.sin(this.light.fi)*500+500, this.light.translation[2]];
+
     }
 
     toggleGameState() {
@@ -179,22 +182,3 @@ async function restart() {
 const guiParentElement = document.querySelector('.player-container');
 guiParentElement.style.display = 'flex';
 app.playerController.fuelElement.startWidth = document.querySelector('.fuelbar').offsetWidth;
-
-
-const gui = new GUI();
-
-// geometry
-gui.add(app.renderer, 'planetRadius', 5000e3, 10000e3);
-gui.add(app.renderer, 'atmosphereRadius', 5000e3, 10000e3);
-gui.add(app.renderer, 'cameraAltitude', 1, 50e3);
-gui.add(app.renderer, 'sunHeight', 0, 1);
-
-// physics
-gui.add(app.renderer, 'sunIntensity', 0, 50);
-gui.add(app.renderer, 'mieScatteringAnisotropy', -1, 1);
-gui.add(app.renderer, 'mieDensityScale', 0, 20000);
-gui.add(app.renderer, 'rayleighDensityScale', 0, 20000);
-
-// integration
-gui.add(app.renderer, 'primaryRaySamples', 1, 64).step(1);
-gui.add(app.renderer, 'secondaryRaySamples', 1, 64).step(1);

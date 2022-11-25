@@ -106,7 +106,7 @@ export class Renderer {
         // render Skybox / environment
         // this.renderSkybox(skybox, camera);
         // sky (Nishita)
-        this.renderNishita();
+        this.renderNishita(light);
         this.renderSkyboxNishita(camera);
         this.renderObjects(rootNode, camera, light);
     }
@@ -274,7 +274,7 @@ export class Renderer {
         gl.depthFunc(gl.LESS); // unset depth function to <
     }
 
-    renderNishita() {
+    renderNishita(light) {
         const gl = this.gl;
 
         const { framebuffer, size } = this.sky;
@@ -288,9 +288,9 @@ export class Renderer {
         gl.uniform1f(uniforms.uPlanetRadius, this.planetRadius);
         gl.uniform1f(uniforms.uAtmosphereRadius, this.atmosphereRadius);
         gl.uniform1f(uniforms.uCameraAltitude, this.cameraAltitude);
+        this.sunHeight = Math.sin(light.fi)*0.5+0.5;
         const sunAngle = this.sunHeight * Math.PI / 2;
         gl.uniform3fv(uniforms.uSunDirection, [0, Math.sin(sunAngle), Math.cos(sunAngle)]);
-
         // physics
         gl.uniform1f(uniforms.uSunIntensity, this.sunIntensity);
         gl.uniform1f(uniforms.uMieScatteringAnisotropy, this.mieScatteringAnisotropy);
