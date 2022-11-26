@@ -21,10 +21,12 @@ class Airborne extends Application {
         this.state = GameState.START;
 
         // loading non GLTF objects and textures
-        const [cube, envmap, grass] = await Promise.all([
+        const [cube, envmap, grass, bloom, diffuse] = await Promise.all([
             this.renderer.loadModel('./res/cube/cube.json'),
             this.renderer.loadTexture('./res/images/sky2.jpg', { min: this.gl.LINEAR, mag: this.gl.LINEAR }),
             this.renderer.loadTexture('./res/images/grass.png', { mip: true, min: this.gl.NEAREST_MIPMAP_NEAREST, mag: this.gl.NEAREST }),
+            this.renderer.loadTexture('./res/fuel/crate-emission.png', { min: this.gl.LINEAR, mag: this.gl.LINEAR }),
+            this.renderer.loadTexture('./res/fuel/crate-diffuse.png', { min: this.gl.LINEAR, mag: this.gl.LINEAR })
         ]);
 
         // root
@@ -92,7 +94,7 @@ class Airborne extends Application {
         this.playerController = new PlayerController(this.airplane.nodes[0], this.camera, this.canvas);
 
         // initialize fuel controller
-        this.fuelController = new FuelController(this.root, this.renderer, this.loader, 4, 8, 0.25, cube, grass);
+        this.fuelController = new FuelController(this.root, this.renderer, this.loader, 4, 8, 0.25, cube, grass, bloom, diffuse);
         await this.fuelController.loadNodes();
 
         // initialize clouds controller
@@ -157,7 +159,7 @@ class Airborne extends Application {
         mat4.perspective(this.camera.projection, fovy, aspect, near, far);
 
         //-----------------------bloom-----------------------
-        //this.renderer.resize(w, h);
+        //this.renderer.resize();
         //-----------------------bloom-----------------------
     }
 }

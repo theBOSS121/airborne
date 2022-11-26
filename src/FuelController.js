@@ -6,7 +6,7 @@ import { Node, NodeType } from './Node.js';
 
 export class FuelController {
 
-    constructor(root, renderer, loader, fuelPerMinute, amountOfFuelAtStart, fuelValue, cube, grass) {
+    constructor(root, renderer, loader, fuelPerMinute, amountOfFuelAtStart, fuelValue, cube, grass, bloom, diffuse) {
         this.root = root;
         this.renderer = renderer;
         this.loader = loader;
@@ -19,6 +19,8 @@ export class FuelController {
 
         this.cube = cube;
         this.grass = grass;
+        this.bloom = bloom;
+        this.diffuse = diffuse
     }
 
     async loadNodes() {
@@ -90,21 +92,20 @@ export class FuelController {
                 }
             }
         });
+
+        //bloom
+
+        //const cubeDiffuseTexture = this.diffuse;
+        //this.cube.diffuseTexture = cubeDiffuseTexture;
+
+        //const cubeEmissionTexture = this.bloom;
+        //this.cube.emissionTexture = cubeEmissionTexture;
+
+        //this.cube.mesh = ?;
+
+        //this.renderer.resize();
+
+        //bloom
        
     }
-
-        //-----------------------bloom-----------------------
-    /*loadImage(uri) {
-        return new Promise((resolve, reject) => {
-            let image = new Image();
-            image.addEventListener('load', e => resolve(image));
-            image.addEventListener('error', reject);
-            image.src = uri;
-        });
-    }
-
-    loadJson(uri) {
-        return fetch(uri).then(response => response.json());
-    }*/
-    //-----------------------bloom-----------------------
 }
