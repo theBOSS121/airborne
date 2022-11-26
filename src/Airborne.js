@@ -28,7 +28,7 @@ class Airborne extends Application {
         ]);
 
         // root
-        this.root = new Node();
+        this.root = new Node({ collidable: false });
         this.physics = new Physics(this.root);
 
         // env map is not used if we are using nishita sky (insted of envmap)
@@ -46,24 +46,19 @@ class Airborne extends Application {
         });
         this.renderer.prepareGLTFNodes(this.scene);
         this.root.addChild(this.scene);
+        // for(let i = 0; i < this.scene.nodes.length; i++) {
+        //     this.scene.nodes[i].createBoundingBox(cube, grass);
+        // }
 
         // light / sun
-        this.light = new Node();
+        this.light = new Node({ collidable: false });
         this.root.addChild(this.light);
-        this.light.translation = [0, 125, 0];
+        this.light.translation = [0, 125, -300];
         this.light.color = [237, 205, 459];
         this.light.intensity = 5000;
         this.light.attenuation = [0.01, 0.2, 0.2];
         this.light.collidable = false;
         
-
-        // airplane - camera connector
-        // this.connector = new Node();
-        // this.connector.nodeType = NodeType.PLAYER;
-        // this.root.addChild(this.connector);
-        // this.connector.itisfuckingstupid = 'connector'
-
-
         // airplane
         await this.loader.load('../res/plane/plane.gltf');
         this.airplane = await this.loader.loadGLTFNodes(this.loader.defaultScene, {
@@ -78,13 +73,18 @@ class Airborne extends Application {
         this.renderer.prepareGLTFNodes(this.airplane);
         this.airplane.nodes[0].translation = [-10, 100, -10]
         this.airplane.nodes[0].nodeType = NodeType.PLAYER;
+        // make airplanes bounding box smallest minmax box
+        this.airplane.nodes[0].aabb.max[0] = this.airplane.nodes[0].aabb.max[1]
+        this.airplane.nodes[0].aabb.max[2] = this.airplane.nodes[0].aabb.max[1]
+        this.airplane.nodes[0].aabb.min[0] = -this.airplane.nodes[0].aabb.max[1]
+        this.airplane.nodes[0].aabb.min[2] = -this.airplane.nodes[0].aabb.max[1]
+        this.airplane.nodes[0].aabb.min[1] = -this.airplane.nodes[0].aabb.max[1]
         // this.airplane.nodes[0].createBoundingBox(cube, grass);
         this.root.addChild(this.airplane);
         
 
         // camera
-        this.camera = new Node();
-        this.camera.collidable = false;
+        this.camera = new Node({ collidable: false });
         this.camera.projection = mat4.create();
         this.root.addChild(this.camera);
 
@@ -96,14 +96,13 @@ class Airborne extends Application {
         await this.fuelController.loadNodes();
 
         // initialize clouds controller
-        this.cloudController = new CloudController(this.root, this.renderer, this.loader, 12);
+        this.cloudController = new CloudController(this.root, this.airplane, this.renderer, this.loader, 12);
         await this.cloudController.loadNodes();
 
         // sky box
         this.skybox = new Node();
         this.skybox.model = cube;
         this.skybox.material = new Material({}, envmap);
-        
     }
 
     update(dt) {
@@ -112,8 +111,12 @@ class Airborne extends Application {
         this.fuelController.update(dt);
         this.cloudController.update(dt);
         this.physics.update(dt);
-        
-        vec3.add(this.light.translation, this.light.translation, vec3.clone([dt*1000, 0, 0]));
+
+        this.light.fi = this.time/20000;
+        if(this.light.fi > Math.PI/2 * 3) this.light.fi = Math.PI/2 * 3
+        this.light.intensity = Math.sin(this.light.fi) * 500000 + 505000
+        this.light.translation = [this.light.translation[0], Math.sin(this.light.fi)*500+500, this.light.translation[2]];
+
     }
 
     toggleGameState() {
@@ -183,22 +186,3 @@ async function restart() {
 const guiParentElement = document.querySelector('.player-container');
 guiParentElement.style.display = 'flex';
 app.playerController.fuelElement.startWidth = document.querySelector('.fuelbar').offsetWidth;
-
-
-const gui = new GUI();
-
-// geometry
-gui.add(app.renderer, 'planetRadius', 5000e3, 10000e3);
-gui.add(app.renderer, 'atmosphereRadius', 5000e3, 10000e3);
-gui.add(app.renderer, 'cameraAltitude', 1, 50e3);
-gui.add(app.renderer, 'sunHeight', 0, 1);
-
-// physics
-gui.add(app.renderer, 'sunIntensity', 0, 50);
-gui.add(app.renderer, 'mieScatteringAnisotropy', -1, 1);
-gui.add(app.renderer, 'mieDensityScale', 0, 20000);
-gui.add(app.renderer, 'rayleighDensityScale', 0, 20000);
-
-// integration
-gui.add(app.renderer, 'primaryRaySamples', 1, 64).step(1);
-gui.add(app.renderer, 'secondaryRaySamples', 1, 64).step(1);

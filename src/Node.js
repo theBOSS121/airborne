@@ -5,12 +5,15 @@ import { Material } from './Material.js';
 export const NodeType = {
     PLAYER: 0,
     FUEL: 1,
+    CLOUD: 2,
+    ISLAND: 3,
+    UNKNOWN: 4
 }
 
 export class Node {
 
     constructor(options = {}) {
-
+        this.nodeType = options.nodeType ? options.nodeType : NodeType.UNKNOWN
         this._translation = options.translation ? vec3.clone(options.translation) : vec3.fromValues(0, 0, 0);
         this._rotation = options.rotation ? quat.clone(options.rotation) : quat.fromValues(0, 0, 0, 1);
         this._scale = options.scale ? vec3.clone(options.scale) : vec3.fromValues(1, 1, 1);
@@ -46,6 +49,7 @@ export class Node {
         this.boundingBox.material = new Material({ }, null);
         // this.boundingBox.material.texture = texture;
         this.boundingBox.scale = [(this.aabb.max[0]-this.aabb.min[0])/2,(this.aabb.max[1]-this.aabb.min[1])/2,(this.aabb.max[2]-this.aabb.min[2])/2]
+        this.boundingBox.translation = [(this.aabb.max[0]+this.aabb.min[0])/2,(this.aabb.max[1]+this.aabb.min[1])/2,(this.aabb.max[2]+this.aabb.min[2])/2]
     }
 
     updateTransformationComponents() {
@@ -124,7 +128,6 @@ export class Node {
 
     removeChild(node) {
         const index = this.children.indexOf(node);
-        console.log(index)
         if (index >= 0) {
             this.children.splice(index, 1);
             node.parent = null;
