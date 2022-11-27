@@ -13,7 +13,7 @@ export class FuelController {
         this.fuels = [];
         this.fuelValue = fuelValue;
 
-        this.audio = new Audio('../res/audio/boost.mp3');
+        this.audio = new Audio('./res/audio/boost.mp3');
 
         this.cube = cube;
         this.grass = grass;
@@ -54,7 +54,7 @@ export class FuelController {
 
     async spawnFuel() {
         const translation = [Math.random() * 250 - 125, Math.random() * 120 - 60, Math.random() * 250 - 125];
-        await this.loader.load('../res/fuel/fuel.gltf');
+        await this.loader.load('./res/fuel/fuel.gltf');
 
         const fuel = await this.loader.loadGLTFNodes(this.loader.defaultScene, {
             diffuse : 0.75,

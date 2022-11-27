@@ -7,7 +7,7 @@ export class PlayerController {
 
     constructor(airplaneNode, cameraNode, domElement) {
         
-        this.lowFuelAudio = new Audio('../res/audio/low_fuel.mp3');
+        this.lowFuelAudio = new Audio('./res/audio/low_fuel.mp3');
 
         // playtime - in miliseconds, if null it will display 0
         this.playtime = null;

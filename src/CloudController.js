@@ -53,7 +53,7 @@ export class CloudController {
     async spawnCloud() {
         const cloudTransparency = 0.85;
         const cloudNumber = Math.floor(Math.random() *  3) + 1;
-        await this.loader.load('../res/cloud/cloud_' + cloudNumber + '.gltf');
+        await this.loader.load('./res/cloud/cloud_' + cloudNumber + '.gltf');
         const cloud = await this.loader.loadGLTFNodes(this.loader.defaultScene, {
             diffuse : 0.75,
             specular : 0.01,
