@@ -250,10 +250,10 @@ export class PlayerController {
     pointermoveHandler(e) {
         // Horizontal pointer movement causes camera panning (y-rotation),
         // vertical pointer movement causes camera tilting (x-rotation).
-        const dx = Math.min(Math.abs(e.movementX), 5) * Math.sign(e.movementX);
-        const dy = Math.min(Math.abs(e.movementY), 10) * Math.sign(e.movementY);
+        const dx = Math.min(Math.abs(e.movementX), 12) * Math.sign(e.movementX);
+        const dy = Math.min(Math.abs(e.movementY), 12) * Math.sign(e.movementY);
         this.eulerRotation[2] -= dy * this.pointerSensitivity;
-
+        this.turningX += Math.sign(dx) * 0.125
         // quat.rotateZ(airplaneRotation, airplaneRotation, this.eulerRotation[2]);
         // quat.slerp(airplaneRotation, airplaneRotation, this.airplaneNode.rotation, slerpValue);
         if(this.eulerRotation[2] > Math.PI/2 && this.eulerRotation[2] < Math.PI / 2 * 3) {
