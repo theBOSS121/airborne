@@ -20,10 +20,19 @@ export class CloudController {
         for (let cloud of this.clouds.children) {
             const x = cloud.nodes[0].translation[0];
             const z = cloud.nodes[0].translation[2];
-            if (Math.abs(x) > 150 || Math.abs(z) > 150) {
-                // improve with a set
-                this.clouds.children = this.clouds.children.filter(c => cloud !== c);
-                this.spawnCloud();                
+            if(x < -160) {
+                cloud.nodes[0].translation[0] = -160;
+                cloud.nodes[0].velocity[0] *= -1;
+            }else if(x > 160) {
+                cloud.nodes[0].translation[0] = 160;
+                cloud.nodes[0].velocity[0] *= -1;
+            }
+            if(z < -160) {
+                cloud.nodes[0].translation[2] = -160;
+                cloud.nodes[0].velocity[2] *= -1;
+            }else if(z > 160) {
+                cloud.nodes[0].translation[2] = 160;
+                cloud.nodes[0].velocity[2] *= -1;
             }
         }
         this.sortColuds() // transparent objects should be sorted! (could be bad for performance)
@@ -62,7 +71,7 @@ export class CloudController {
         // Size between 8 and 12 on x and z axes and from 3 to 6 on y axis
         cloud.nodes[0].scale = [Math.random() * 4 + 8, Math.random() * 3 + 3, Math.random() * 4 + 8];
         // Speed from -2.5 to 2.5 on x and z axes and 0 on y axis
-        cloud.nodes[0].velocity = [Math.random() * 5 - 2.5, 0, Math.random() * 5 - 2.5]
+        cloud.nodes[0].velocity = [Math.random() * 10 - 5, 0, Math.random() * 10 - 5]
         cloud.nodes[0].collidable = false;
         cloud.nodes[0].nodeType = NodeType.CLOUD;
     }
