@@ -151,3 +151,15 @@ a.back:hover {
     font-size: 30px;
     color: #c00404;
 }
+
+.fps {
+    color: white;
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    font-size: 14px;
+}
+
+.fps span {
+    font-size: 26px;
+}

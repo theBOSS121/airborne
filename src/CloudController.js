@@ -20,7 +20,7 @@ export class CloudController {
         for (let cloud of this.clouds.children) {
             const x = cloud.nodes[0].translation[0];
             const z = cloud.nodes[0].translation[2];
-            if (Math.abs(x) > 150 || Math.abs(z) > 150) {
+            if (Math.abs(x) > 200 || Math.abs(z) > 200) {
                 // improve with a set
                 this.clouds.children = this.clouds.children.filter(c => cloud !== c);
                 this.spawnCloud();                
@@ -41,7 +41,7 @@ export class CloudController {
     }
 
     async spawnCloud() {
-        const cloudTransparency = Math.max(0.1, Math.random())
+        const cloudTransparency = 0.85;
         const cloudNumber = Math.floor(Math.random() *  3) + 1;
         await this.loader.load('../res/cloud/cloud_' + cloudNumber + '.gltf');
         const cloud = await this.loader.loadGLTFNodes(this.loader.defaultScene, {
@@ -58,9 +58,9 @@ export class CloudController {
         // this.root.addChild(cloud);
         this.clouds.addChild(cloud);
         // Spawn somewhere from -150 to 150 on x and z axes and from 50 to 75 on y axis
-        cloud.nodes[0].translation = [Math.random() * 300 - 150, Math.random() * 25 + 40, Math.random() * 300 - 150];
+        cloud.nodes[0].translation = [Math.random() * 350 - 175, Math.random() * 30 + 40, Math.random() * 350 - 175];
         // Size between 8 and 12 on x and z axes and from 3 to 6 on y axis
-        cloud.nodes[0].scale = [Math.random() * 4 + 8, Math.random() * 3 + 3, Math.random() * 4 + 8];
+        cloud.nodes[0].scale = [Math.random() * 6 + 12, Math.random() * 2.25 + 3.5, Math.random() * 6 + 12];
         // Speed from -2.5 to 2.5 on x and z axes and 0 on y axis
         cloud.nodes[0].velocity = [Math.random() * 5 - 2.5, 0, Math.random() * 5 - 2.5]
         cloud.nodes[0].collidable = false;

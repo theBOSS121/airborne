@@ -34,7 +34,6 @@ export class FuelController {
             const x = Math.random();
             if (x < chance) {
                 await this.spawnFuel();
-                console.log("spawned")
             }
         // }
     }
@@ -75,7 +74,7 @@ export class FuelController {
         this.fuels.push(fuel);
         fuel.nodes[0].scale = [2, 2, 2];
         this.renderer.prepareGLTFNodes(fuel);
-        fuel.nodes[0].createBoundingBox(this.cube, this.grass);
+        // fuel.nodes[0].createBoundingBox(this.cube, this.grass);
         fuel.itisfuckingstupid = 'fuel'
         fuel.nodes[0].itisfuckingstupid = 'fuel.nodes[0]'
         fuel.nodes[0].translation = translation;

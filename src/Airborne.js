@@ -76,7 +76,7 @@ class Airborne extends Application {
             ior : 0.99,
         }); 
         this.renderer.prepareGLTFNodes(this.airplane);
-        this.airplane.nodes[0].translation = [-10, 100, -10]
+        this.airplane.nodes[0].translation = [-60, 10, -10]
         this.airplane.nodes[0].nodeType = NodeType.PLAYER;
         // this.airplane.nodes[0].createBoundingBox(cube, grass);
         this.root.addChild(this.airplane);
@@ -96,7 +96,7 @@ class Airborne extends Application {
         await this.fuelController.loadNodes();
 
         // initialize clouds controller
-        this.cloudController = new CloudController(this.root, this.airplane, this.renderer, this.loader, 12);
+        this.cloudController = new CloudController(this.root, this.airplane, this.renderer, this.loader, 16);
         await this.cloudController.loadNodes();
 
         // sky box
@@ -116,6 +116,10 @@ class Airborne extends Application {
         this.light.fi = this.time/5000;
         this.light.intensity = Math.sin(this.light.fi) * 500000 + 505000
         this.light.translation = [this.light.translation[0], Math.sin(this.light.fi)*500+500, this.light.translation[2]];
+
+        // console.log("fi: " + this.light.fi)
+        // console.log("translation: " + this.light.translation)
+        // console.log("translation: " + this.light.translation)
 
     }
 
