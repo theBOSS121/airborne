@@ -239,7 +239,6 @@ export class GLTFLoader {
                 primitiveOptions.material = await this.loadMaterial(primitiveSpec.material, myOptions);
             }
             primitiveOptions.mode = primitiveSpec.mode;
-            // const primitive = new Primitive(primitiveOptions);
             const primitive = {
                 attributes: {...(primitiveOptions.attributes || {})},
                 indices: primitiveOptions.indices || null,

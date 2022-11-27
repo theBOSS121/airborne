@@ -11,13 +11,11 @@ export class Physics {
     }
 
     update(dt) {
-        this.root.traverse(node => {
-             
-            // Move every node with defined velocity.0];
+        this.root.traverse(node => {             
+            // Move every node with defined velocity
             if (node.velocity) {
                 node.translation = vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
                 node.updateTransformationMatrix();
-
                 // After moving, check for collision with every other node.
                 this.root.traverse(other => {
                     if (node !== other && node.collidable && other.collidable) {
@@ -25,7 +23,6 @@ export class Physics {
                     }
                 });
             }
-
         });
     }
 

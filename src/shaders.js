@@ -1,4 +1,4 @@
-// shaders with light per fragment, enivronment mapping (reflecion/refration), materials
+// shaders with light per fragment, enivronment mapping (reflecion/refration), materials and transparency
 const perFragmentWithEnvmapVertexShader = `#version 300 es
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec2 aTexCoord;
@@ -111,7 +111,6 @@ void main() {
     oColor.w = uTransparency; // set transparency (blending with previously drawn objects)
 }
 `;
-
 // skybox shaders
 const skyboxVertex = `#version 300 es
 layout (location = 0) in vec3 aPosition; // vertex position
@@ -148,8 +147,7 @@ void main() {
     oColor = texture(uEnvmap, directionToTexcoord(normalize(vPosition)));
 }
 `;
-
-
+// Nishita skybox shaders
 const nishitaVertex = `#version 300 es
 
 const vec2 vertices[] = vec2[](
@@ -399,7 +397,6 @@ void main() {
     oColor = pow(oColor, vec4(vec3(1.0 / 2.2), 1));
 }
 `;
-
 
 export const shaders = {
     perFragmentWithEnvmap: {        

@@ -5,7 +5,6 @@ import { app } from './Airborne.js';
 export class PlayerController {
 
     constructor(airplaneNode, cameraNode, domElement) {
-
         this.ROTATION_INTERPOLATION = 0.9;
         this.CAMERA_DISTANCE_FROM_AIRPLANE = 7;
         // playtime - in miliseconds, if null it will display 0
@@ -69,8 +68,6 @@ export class PlayerController {
         const element = this.domElement;
         const doc = element.ownerDocument;
 
-
-
         doc.addEventListener('keydown', this.keydownHandler);
         doc.addEventListener('keyup', this.keyupHandler);
 
@@ -112,7 +109,6 @@ export class PlayerController {
     }
 
     updateAirplane(dt) {
-
         const lerpValue = 0.98 * 120 * dt // value is going to equal 0.98 at 30fps 
         // translation
         const [w, x, y, z] = vec4.clone([...this.airplaneNode.rotation]);

@@ -1,12 +1,12 @@
 import { Renderer } from './Renderer.js';
 
-// Abstraction of aplication (Airborne.js extends Aplication class)
 export const GameState = {
     GAME_OVER: 0,
     PLAYING: 1,
     PAUSED: 2,
     START: 3,
 }
+// Abstraction of aplication (Airborne.js extends Aplication class)
 export class Application {
     
     constructor(canvas, glOptions) {
@@ -19,11 +19,9 @@ export class Application {
         this.time = performance.now();
         this.prevTime = this.time;
         this.renderer = new Renderer(this.gl);
-        this.state = GameState.PAUSED;
-        
+        this.state = GameState.PAUSED;        
         
         await this.start(); // init/start game before game loop starts
-
         requestAnimationFrame(this._update); // start game loop
     }
     // webgl initialization
@@ -46,10 +44,7 @@ export class Application {
         this.update(this.state == GameState.PLAYING ? dt : 0); // if the game is not in playing mode, don't update anything, but still render
          
         requestAnimationFrame(this._update);
-
     }
-
-
 
     // resize if canvas width/height has changed
     _resize() {
