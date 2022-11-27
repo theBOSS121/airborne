@@ -105,7 +105,7 @@ export class PlayerController {
 
     updateFuel(dt) {
         const speed = vec3.len(this.airplaneNode.velocity); // returns square root of the sum of squares
-        // this.fuel -= dt * speed * this.fuelPerUnits
+        this.fuel -= dt * speed * this.fuelPerUnits
         if (this.fuel <= 0) {
             app.gameOver();
         } else if (this.fuel > 1) {
