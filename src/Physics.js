@@ -93,7 +93,6 @@ export class Physics {
                     });
                     return;
                 } 
-            // console.log("collision")
             } else if (collisionNodesTypes.some(nt => nt == NodeType.PLAYER)) {
                 this.gameOverAudio.play();
                 app.gameOver();

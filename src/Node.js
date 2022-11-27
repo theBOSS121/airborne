@@ -6,7 +6,8 @@ export const NodeType = {
     PLAYER: 0,
     FUEL: 1,
     CLOUD: 2,
-    UNKNOWN: 3
+    ISLAND: 3,
+    UNKNOWN: 4
 }
 
 export class Node {
@@ -48,6 +49,7 @@ export class Node {
         this.boundingBox.material = new Material({ }, null);
         // this.boundingBox.material.texture = texture;
         this.boundingBox.scale = [(this.aabb.max[0]-this.aabb.min[0])/2,(this.aabb.max[1]-this.aabb.min[1])/2,(this.aabb.max[2]-this.aabb.min[2])/2]
+        this.boundingBox.translation = [(this.aabb.max[0]+this.aabb.min[0])/2,(this.aabb.max[1]+this.aabb.min[1])/2,(this.aabb.max[2]+this.aabb.min[2])/2]
     }
 
     updateTransformationComponents() {

@@ -56,11 +56,6 @@ export class FuelController {
         const translation = [Math.random() * 250 - 125, Math.random() * 120 - 60, Math.random() * 250 - 125];
         await this.loader.load('../res/fuel/fuel.gltf');
 
-        // const fuelConnector = new Node();
-        // fuelConnector.itisfuckingstupid = 'fuelConnector'
-        // fuelConnector.nodeType = NodeType.FUEL;
-        // this.root.addChild(fuelConnector);
-
 
         const fuel = await this.loader.loadGLTFNodes(this.loader.defaultScene, {
             diffuse : 0.75,
@@ -94,16 +89,5 @@ export class FuelController {
             }
         });
        
-
-        // TODO: make boosts gloom
-
-        // this.light = new Node();
-        // fuel.nodes[0].addChild(this.light);
-
-        // this.light = new Node();
-        // fuel.nodes[0].addChild(this.light);
-        // this.light.color = [255, 247, 15];
-        // this.light.position = [0, 5, 0];
-        // this.light.intensity = 1;
     }
 }
