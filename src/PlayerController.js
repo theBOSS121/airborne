@@ -107,12 +107,12 @@ export class PlayerController {
         const speed = vec3.len(this.airplaneNode.velocity); // returns square root of the sum of squares
         // this.fuel -= dt * speed * this.fuelPerUnits
         if (this.fuel <= 0) {
-            // app.gameOver();
+            app.gameOver();
         } else if (this.fuel > 1) {
             this.fuel = 1;
         } else if (this.fuel < 1/4) {
             // if fuel is low
-            this.fuelElement.style.backgroundColor = "#ff503c";
+            this.fuelElement.style.backgroundColor = "#c00404";
             this.lowFuelAudio.play();
         } else {
             this.fuelElement.style.backgroundColor = "#ffc83c";
