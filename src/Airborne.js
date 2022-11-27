@@ -34,7 +34,7 @@ class Airborne extends Application {
         // envmap is not used if we are using nishita sky (insted of envmap)
         // loading scene
         this.loader = new GLTFLoader(envmap),
-        await this.loader.load('../res/scena/scena.gltf');
+        await this.loader.load('./res/scena/scena.gltf');
         this.scene = await this.loader.loadGLTFNodes(this.loader.defaultScene, {
             diffuse : 0.59,
             specular : 0.03,
@@ -63,7 +63,7 @@ class Airborne extends Application {
         this.light.translation = [this.light.translation[0], Math.sin(this.light.fi)*500+500, this.light.translation[2]];
         
         // airplane
-        await this.loader.load('../res/plane/plane.gltf');
+        await this.loader.load('./res/plane/plane.gltf');
         this.airplane = await this.loader.loadGLTFNodes(this.loader.defaultScene, {
             diffuse : 0.8,
             specular : 0.1, //i

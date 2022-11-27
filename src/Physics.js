@@ -7,7 +7,7 @@ export class Physics {
     constructor(root) {
         this.root = root;
 
-        this.gameOverAudio = new Audio('../res/audio/explosion.mp3');
+        this.gameOverAudio = new Audio('./res/audio/explosion.mp3');
     }
 
     update(dt) {
