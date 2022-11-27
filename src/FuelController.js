@@ -56,7 +56,6 @@ export class FuelController {
         const translation = [Math.random() * 250 - 125, Math.random() * 120 - 60, Math.random() * 250 - 125];
         await this.loader.load('../res/fuel/fuel.gltf');
 
-
         const fuel = await this.loader.loadGLTFNodes(this.loader.defaultScene, {
             diffuse : 0.75,
             specular : 0.45,
@@ -73,7 +72,6 @@ export class FuelController {
         fuel.itisfuckingstupid = 'fuel'
         fuel.nodes[0].itisfuckingstupid = 'fuel.nodes[0]'
         fuel.nodes[0].translation = translation;
-        // fuel.nodes[0].parent = fuelConnector;
         fuel.nodes[0].nodeType = NodeType.FUEL;
         fuel.nodes[0].parentNode = fuel; // implementation to get fuel GLTFNode
         this.root.addChild(fuel);
@@ -87,7 +85,6 @@ export class FuelController {
                     this.spawnFuel();
                 }
             }
-        });
-       
+        });       
     }
 }

@@ -18,7 +18,6 @@ class Airborne extends Application {
 
 
     async start() {
-
         this.state = GameState.START;
 
         // loading non GLTF objects and textures
@@ -32,7 +31,7 @@ class Airborne extends Application {
         this.root = new Node({ collidable: false });
         this.physics = new Physics(this.root);
 
-        // env map is not used if we are using nishita sky (insted of envmap)
+        // envmap is not used if we are using nishita sky (insted of envmap)
         // loading scene
         this.loader = new GLTFLoader(envmap),
         await this.loader.load('../res/scena/scena.gltf');
@@ -158,7 +157,6 @@ class Airborne extends Application {
         const aspect = w / h;
         const fovy = Math.PI / 2.4;
         const near = 1;
-        // const far = Math.sqrt(2 * Math.pow(150, 2));
         const far = 1000
         mat4.perspective(this.camera.projection, fovy, aspect, near, far);
     }
@@ -177,7 +175,7 @@ document.querySelector('.pause-container').style.display = 'flex';
 // Remove loading animation
 document.querySelector('.loader-container').remove();
 
-// bullshit coede
+// not used code
 async function restart() {
     document.querySelector('.game-over-container').style.display = 'none';
     document.querySelector('.pause-container').style.display = 'flex';

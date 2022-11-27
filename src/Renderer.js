@@ -37,7 +37,6 @@ export class Renderer {
             atmosphereRadius: 6420e3,
             cameraAltitude: 100,
             sunHeight: 0.02,
-
             // physics
             sunIntensity: 20,
             mieScatteringAnisotropy: 0.76,
@@ -45,7 +44,6 @@ export class Renderer {
             mieDensityScale: 400,
             rayleighScatteringCoefficient: [3.8e-6, 13.5e-6, 33.1e-6],
             rayleighDensityScale: 2000,
-
             // integration
             primaryRaySamples: 32,
             secondaryRaySamples: 8,
@@ -115,7 +113,6 @@ export class Renderer {
         const gl = this.gl;
         const { program, uniforms } = this.programs.perFragmentWithEnvmap;
         gl.useProgram(program);
-
         // set uniforms
         const viewMatrix = camera.globalMatrix;
         mat4.invert(viewMatrix, viewMatrix);

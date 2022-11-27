@@ -43,7 +43,6 @@ export class Material {
         this.transmittance = options.transmittance || 1;
         this.ior = options.ior || 1;
         this.transparency = options.transparency || 1;
-
     }
 
 }
