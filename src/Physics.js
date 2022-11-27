@@ -14,8 +14,15 @@ export class Physics {
         this.root.traverse(node => {             
             // Move every node with defined velocity
             if (node.velocity) {
+                
                 node.translation = vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
                 node.updateTransformationMatrix();
+
+                if (node.nodeType == NodeType.PLAYER) {
+                    app.camera.translation = vec3.add(app.camera.translation, vec3.clone(node.translation), vec3.clone(app.playerController.cameraOffset));
+                    app.camera.updateTransformationMatrix();
+                }
+
                 // After moving, check for collision with every other node.
                 this.root.traverse(other => {
                     if (node !== other && node.collidable && other.collidable) {

@@ -14,6 +14,8 @@ class Airborne extends Application {
     
     pauseElement = document.querySelector('.pause-container');
     gameOverElement = document.querySelector('.game-over-container');
+    fuelElement = document.querySelector('.fuelbar');
+
 
     async start() {
         this.state = GameState.START;
@@ -55,6 +57,10 @@ class Airborne extends Application {
         this.light.color = [237, 205, 459];
         this.light.intensity = 5000;
         this.light.attenuation = [0.01, 0.2, 0.2];
+        this.light.collidable = false;
+        this.light.fi = this.time/20000;
+        this.light.intensity = Math.sin(this.light.fi) * 500000 + 505000
+        this.light.translation = [this.light.translation[0], Math.sin(this.light.fi)*500+500, this.light.translation[2]];
         
         // airplane
         await this.loader.load('../res/plane/plane.gltf');
@@ -68,7 +74,7 @@ class Airborne extends Application {
             ior : 0.99,
         }); 
         this.renderer.prepareGLTFNodes(this.airplane);
-        this.airplane.nodes[0].translation = [-10, 100, -10]
+        this.airplane.nodes[0].translation = [-60, 10, -10]
         this.airplane.nodes[0].nodeType = NodeType.PLAYER;
         // make airplanes bounding box smallest minmax box
         this.airplane.nodes[0].aabb.max[0] = this.airplane.nodes[0].aabb.max[1]
@@ -89,11 +95,11 @@ class Airborne extends Application {
         this.playerController = new PlayerController(this.airplane.nodes[0], this.camera, this.canvas);
 
         // initialize fuel controller
-        this.fuelController = new FuelController(this.root, this.renderer, this.loader, 4, 8, 0.25, cube, grass);
+        this.fuelController = new FuelController(this.root, this.renderer, this.loader, 4, 5, 1/2, cube, grass);
         await this.fuelController.loadNodes();
 
         // initialize clouds controller
-        this.cloudController = new CloudController(this.root, this.airplane, this.renderer, this.loader, 12);
+        this.cloudController = new CloudController(this.root, this.airplane, this.renderer, this.loader, 16);
         await this.cloudController.loadNodes();
 
         // sky box
@@ -102,17 +108,19 @@ class Airborne extends Application {
         this.skybox.material = new Material({}, envmap);
     }
 
-    update(dt) {
-        if (this.state == GameState.GAME_OVER) return;
-        this.playerController.update(dt);
-        this.fuelController.update(dt);
-        this.cloudController.update(dt);
-        this.physics.update(dt);
-        // light movement (sun is following the light)
+    updateSun(dt) {
         this.light.fi = this.time/20000;
         if(this.light.fi > Math.PI/2 * 3) this.light.fi = Math.PI/2 * 3
         this.light.intensity = Math.sin(this.light.fi) * 500000 + 505000
         this.light.translation = [this.light.translation[0], Math.sin(this.light.fi)*500+500, this.light.translation[2]];
+    }
+    update(dt) {
+        if (this.state == GameState.GAME_OVER || dt == 0) return;
+        this.playerController.update(dt);
+        this.fuelController.update(dt);
+        this.cloudController.update(dt);
+        this.physics.update(dt);
+        this.updateSun(dt);
     }
 
     toggleGameState() {
@@ -135,6 +143,7 @@ class Airborne extends Application {
         this.state = GameState.GAME_OVER;
         this.gameOverElement.style.display = 'flex';
         this.gameOverElement.querySelector('#score-p span').innerHTML = this.playerController.playtime.toFixed(0);
+        this.fuelElement.style.width = "0px";
         // restart();
     }
     

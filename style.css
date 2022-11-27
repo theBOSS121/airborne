@@ -115,6 +115,7 @@ a.back:hover {
     flex-direction: column;
     gap: 10px;
     box-shadow:  2px 2px 3px rgba(0, 0, 0, 0.4);
+    border: 10px solid rgba(0, 0, 0, 0.55);
 }
 
 .speedometer {
@@ -127,11 +128,25 @@ a.back:hover {
 }
 
 .fuelbar {
+    position: absolute;
+    z-index: 2;
     height: 20px;
     width: 75%;
     background-color: #ffc83c;
-    border-radius: 15px;
+    border-radius: 10px;
     display: block;
+    margin-left: calc(170px*0.25/2)
+}
+
+
+.fuelbar-back {
+    height: 20px;
+    width: 75%;
+    background-color: #fab505;
+    opacity: 0.8;
+    border-radius: 10px;
+    display: block;
+    margin-left: calc(170px*0.25/2)
 }
 
 .playtime {
@@ -150,4 +165,16 @@ a.back:hover {
 #score-p span {
     font-size: 30px;
     color: #c00404;
+}
+
+.fps {
+    color: white;
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    font-size: 14px;
+}
+
+.fps span {
+    font-size: 26px;
 }
