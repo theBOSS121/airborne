@@ -14,6 +14,7 @@ class Airborne extends Application {
     
     pauseElement = document.querySelector('.pause-container');
     gameOverElement = document.querySelector('.game-over-container');
+    fuelElement = document.querySelector('.fuelbar');
 
 
     async start() {
@@ -58,6 +59,9 @@ class Airborne extends Application {
         this.light.intensity = 5000;
         this.light.attenuation = [0.01, 0.2, 0.2];
         this.light.collidable = false;
+        this.light.fi = this.time/20000;
+        this.light.intensity = Math.sin(this.light.fi) * 500000 + 505000
+        this.light.translation = [this.light.translation[0], Math.sin(this.light.fi)*500+500, this.light.translation[2]];
         
         // airplane
         await this.loader.load('../res/plane/plane.gltf');
@@ -92,7 +96,7 @@ class Airborne extends Application {
         this.playerController = new PlayerController(this.airplane.nodes[0], this.camera, this.canvas);
 
         // initialize fuel controller
-        this.fuelController = new FuelController(this.root, this.renderer, this.loader, 4, 8, 0.25, cube, grass);
+        this.fuelController = new FuelController(this.root, this.renderer, this.loader, 4, 5, 1/2, cube, grass);
         await this.fuelController.loadNodes();
 
         // initialize clouds controller
@@ -105,22 +109,19 @@ class Airborne extends Application {
         this.skybox.material = new Material({}, envmap);
     }
 
-    update(dt) {
-        if (this.state == GameState.GAME_OVER) return;
-        this.playerController.update(dt);
-        this.fuelController.update(dt);
-        this.cloudController.update(dt);
-        this.physics.update(dt);
-
+    updateSun(dt) {
         this.light.fi = this.time/20000;
         if(this.light.fi > Math.PI/2 * 3) this.light.fi = Math.PI/2 * 3
         this.light.intensity = Math.sin(this.light.fi) * 500000 + 505000
         this.light.translation = [this.light.translation[0], Math.sin(this.light.fi)*500+500, this.light.translation[2]];
-
-        // console.log("fi: " + this.light.fi)
-        // console.log("translation: " + this.light.translation)
-        // console.log("translation: " + this.light.translation)
-
+    }
+    update(dt) {
+        if (this.state == GameState.GAME_OVER || dt == 0) return;
+        this.playerController.update(dt);
+        this.fuelController.update(dt);
+        this.cloudController.update(dt);
+        this.physics.update(dt);
+        this.updateSun(dt);
     }
 
     toggleGameState() {
@@ -143,6 +144,7 @@ class Airborne extends Application {
         this.state = GameState.GAME_OVER;
         this.gameOverElement.style.display = 'flex';
         this.gameOverElement.querySelector('#score-p span').innerHTML = this.playerController.playtime.toFixed(0);
+        this.fuelElement.style.width = "0px";
         // restart();
     }
     
