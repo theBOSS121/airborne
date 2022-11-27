@@ -20,18 +20,18 @@ export class CloudController {
         for (let cloud of this.clouds.children) {
             const x = cloud.nodes[0].translation[0];
             const z = cloud.nodes[0].translation[2];
-            if(x < -160) {
-                cloud.nodes[0].translation[0] = -160;
+            if(x < -180) {
+                cloud.nodes[0].translation[0] = -180;
                 cloud.nodes[0].velocity[0] *= -1;
-            }else if(x > 160) {
-                cloud.nodes[0].translation[0] = 160;
+            }else if(x > 180) {
+                cloud.nodes[0].translation[0] = 180;
                 cloud.nodes[0].velocity[0] *= -1;
             }
-            if(z < -160) {
-                cloud.nodes[0].translation[2] = -160;
+            if(z < -180) {
+                cloud.nodes[0].translation[2] = -180;
                 cloud.nodes[0].velocity[2] *= -1;
-            }else if(z > 160) {
-                cloud.nodes[0].translation[2] = 160;
+            }else if(z > 180) {
+                cloud.nodes[0].translation[2] = 180;
                 cloud.nodes[0].velocity[2] *= -1;
             }
         }

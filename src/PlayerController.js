@@ -68,7 +68,7 @@ export class PlayerController {
         // Decay as 1 - log percent max speed loss per second.
         this.decay = 0.9935;
         // Pointer sensitivity in radians per pixel.
-        this.pointerSensitivity = 0.002;
+        this.pointerSensitivity = 0.003;
         this.initHandlers();
         this.oldQRotation = this.cameraNode.rotation;
     }
@@ -105,7 +105,7 @@ export class PlayerController {
 
     updateFuel(dt) {
         const speed = vec3.len(this.airplaneNode.velocity); // returns square root of the sum of squares
-        this.fuel -= dt * speed * this.fuelPerUnits
+        // this.fuel -= dt * speed * this.fuelPerUnits
         if (this.fuel <= 0) {
             app.gameOver();
         } else if (this.fuel > 1) {
