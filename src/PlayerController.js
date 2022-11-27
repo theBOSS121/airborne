@@ -42,7 +42,7 @@ export class PlayerController {
         // We are going to use Euler angles for rotation.
         this.eulerRotation = cameraNode.eulerRotation || [0, 0, 0] // rotation around [x, y, z]
         this.cameraNode.rotation = quat.rotateY(this.cameraNode.rotation, this.cameraNode.rotation, - Math.PI / 2);
-        this.oldRotationQuat = quat.create();
+        this.oldCameraRotation = quat.create();
         this.defaultCameraOffset = [-10, 0, 0];
         this.cameraOffset = [-6, 1.75, 0];
 
@@ -107,7 +107,7 @@ export class PlayerController {
         const speed = vec3.len(this.airplaneNode.velocity); // returns square root of the sum of squares
         this.fuel -= dt * speed * this.fuelPerUnits
         if (this.fuel <= 0) {
-            app.gameOver();
+            // app.gameOver();
         } else if (this.fuel > 1) {
             this.fuel = 1;
         } else if (this.fuel < 1/4) {
@@ -129,7 +129,7 @@ export class PlayerController {
     }
 
     updateAirplane(dt) {
-        const slerpValue = Math.exp(-0.7*dt) 
+        const slerpValue = Math.exp(-1.5*dt) 
         // translation
         const [w, x, y, z] = vec4.clone([...this.airplaneNode.rotation]);
         const ux = 2 * (x * z - w * y);
@@ -140,10 +140,33 @@ export class PlayerController {
         const forward = vec3.set(vec3.create(), V[2], V[1], -V[0]);
 
         const acc = vec3.create();
-        if (this.keys['KeyW']) {
+        if (this.keys['Space']) {
             const wForward = vec3.clone(forward);
             vec3.scale(wForward, forward, 0.4);
             vec3.add(acc, acc, wForward);
+        }
+        if (this.keys['KeyW']) {
+            this.eulerRotation[2] += 0.01;
+        } 
+        if (this.keys['KeyS']) {
+            this.eulerRotation[2] -= 0.01;
+        } 
+        if (this.keys['KeyA']) {
+            if(this.eulerRotation[2] > Math.PI/2 && this.eulerRotation[2] < Math.PI / 2 * 3) {
+                this.eulerRotation[1] -= 0.01;
+            }else {
+                this.eulerRotation[1] += 0.01;
+            }
+            this.turningX -= 0.125; // rotate the airplane around X axis when turning left and right to simulate real life turning
+
+        } 
+        if (this.keys['KeyD']) {
+            if(this.eulerRotation[2] > Math.PI/2 && this.eulerRotation[2] < Math.PI / 2 * 3) {
+                this.eulerRotation[1] += 0.01;
+            }else {
+                this.eulerRotation[1] -= 0.01;
+            }
+            this.turningX += 0.125; // rotate the airplane around X axis when turning left and right to simulate real life turning
         }
 
         // acceleration
@@ -165,7 +188,8 @@ export class PlayerController {
     }
 
     updateCamera(dt) {
-        const lerpValue = Math.exp(-0.7*dt) 
+        const lerpValue = Math.exp(-2*dt) 
+        const slerpValue = Math.exp(-2*dt) 
 
         // translation
         const translationVector = vec3.clone(this.defaultCameraOffset);
@@ -181,8 +205,15 @@ export class PlayerController {
         // this.cameraNode.translation = correctedTranslationVector;
 
         // rotation
+        const cameraRotation = quat.create();
+        quat.rotateY(cameraRotation, cameraRotation, this.eulerRotation[1]);
+        quat.rotateZ(cameraRotation, cameraRotation, this.eulerRotation[2]);
+        quat.slerp(cameraRotation, cameraRotation, this.oldCameraRotation, slerpValue);
+        this.oldCameraRotation = cameraRotation;
+
+        // correct rotation
         const correctedQuat = quat.create();
-        quat.rotateY(correctedQuat, this.airplaneNode.rotation, - Math.PI / 2)
+        quat.rotateY(correctedQuat, cameraRotation, - Math.PI / 2)
         this.cameraNode.rotation = correctedQuat;
     }
 
@@ -218,24 +249,23 @@ export class PlayerController {
     pointermoveHandler(e) {
         // Horizontal pointer movement causes camera panning (y-rotation),
         // vertical pointer movement causes camera tilting (x-rotation).
-        const dx = Math.min(Math.abs(e.movementX), 12) * Math.sign(e.movementX);
-        const dy = Math.min(Math.abs(e.movementY), 12) * Math.sign(e.movementY);
+        const dx = Math.min(Math.abs(e.movementX), 5) * Math.sign(e.movementX);
+        const dy = Math.min(Math.abs(e.movementY), 10) * Math.sign(e.movementY);
         this.eulerRotation[2] -= dy * this.pointerSensitivity;
 
         // quat.rotateZ(airplaneRotation, airplaneRotation, this.eulerRotation[2]);
         // quat.slerp(airplaneRotation, airplaneRotation, this.airplaneNode.rotation, slerpValue);
-        this.turningX += Math.sign(dx)*0.125; // rotate the airplane around X axis when turning left and right to simulate real life turning
         if(this.eulerRotation[2] > Math.PI/2 && this.eulerRotation[2] < Math.PI / 2 * 3) {
-            this.eulerRotation[1]  += dx * this.pointerSensitivity;
+            // this.eulerRotation[1]  += dx * this.pointerSensitivity;
         }else {
-            this.eulerRotation[1]  -= dx * this.pointerSensitivity;
+            // this.eulerRotation[1]  -= dx * this.pointerSensitivity;
         }
         // Limit pitch so that the camera does not invert on itself.
         // if (this.eulerRotation[0] > Math.PI / 2) this.eulerRotation[0] = Math.PI / 2;
         // if (this.eulerRotation[0] < -Math.PI / 2) this.eulerRotation[0] = -Math.PI / 2;
         // Constrain yaw to the range [0, pi * 2]
-        this.eulerRotation[1] = (this.eulerRotation[1]) % (Math.PI * 2);
-        this.eulerRotation[2] = ((this.eulerRotation[2]) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        // this.eulerRotation[1] = (this.eulerRotation[1]) % (Math.PI * 2);
+        // this.eulerRotation[2] = ((this.eulerRotation[2]) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
 
         this.lastTimePointerMoveHandler = this.playtime;
     }
