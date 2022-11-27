@@ -95,6 +95,7 @@ Uporabnišli vmesnik je precej preprost.V spodnjem levem kotu se nahajajo igralc
 \section{Glasba in zvok}%done
 Za zvočne efekte uporabljamo: vesel zvok - ko letalo pobere gorivo, zvok zaleta - ko se letalo zaleti v otok in nadležen piskajoči zvok - ko letalu zmankuje goriva. Dodali smo jih za popestritev. Vse zvoke smo našli na internetu, so royalty-free za takšno in podobno uporabo. Vir zvoka za opozorilo:  \footnote{\url{https://www.https://www.youtube.com/watch?v=R6bpWsyEpbg&ab_channel=SoundLibrary}}, vir zvoka za pobiranje goriva:  \footnote{\url{https://www.youtube.com/watch?v=QRrPiYR6yAw&ab_channel=FastSolution}}, vir zvoka zaleta:  \footnote{\url{https://mixkit.co/free-sound-effects/explosion/}}.
 
+
 \section{Gameplay}%done
 Ko se igra zažene, se na zaslonu izpiše: "LEFT CLICK TO START". Takoj, ko igrale pritisne levo miškino tipko, se poveže z letalom in se začne premikati oz. leteti naprej. Igralec letala ne more ustaviti, z miškinim pogledom ali tipkami WASD ga usmerja po xyz oseh. Če pritisne tipko ESC, se ta povezava prekine, na zaslonu se izpiše: "LEFT CLICK TO CONTINUE", kar da igro na pavzo, letala več ne nadzoruje in spet se lahko z miško premakne ven iz scene v brskalniku. Vsakič, ko pobere žeton, se mu tank goriva napolne za polovico. Žetoni za gorivo se generirajo naključno po svetu. A če se zgenerirajo znotraj kakšnega otoka, se ta žetono zbriše in ponovno se pokliče funkcija za naključno generiranje žetona. Ko se zaleti ali ko mu zmanjka goriva, je igre konec, nima več nadzora nad letalom, izpiše se: "GAME OVER" in število sekund, ki jih je preigral. Za tem mora igro ponovno zagnati in začne na istem mestu, kot prej.
 \begin{center}
@@ -110,7 +111,11 @@ Ko se igra zažene, se na zaslonu izpiše: "LEFT CLICK TO START". Takoj, ko igra
 \end{center}
 
 \section{Tehnični vidiki igre} %done
+<<<<<<< HEAD
 \subsection{Izris prozornih objektov}%done
+=======
+\subsubsection{Izris prozornih objektov}%done
+>>>>>>> a3e25ab5ae48a05bc5b114d1f26c1c95b2ab919f
 Pri izrisu prozornih objektov (oblakov) je pomembno, da jih izrišemo za neprozornimi objekti in urejene po bližini od kamere (najbližje najkasneje).
 \subsection{Hitrost in gorivo}%done
 Gorivo se na vsakem framu zmanjša za dt * hitrost * konstantna (ki pove, koliko goriva na se porabi na en meter). Hitrost pa se računa, s pomočjo gl-matrix metode vec3.len, ki vrne kvadratni koren seštevka kvadratov.
@@ -118,8 +123,11 @@ Gorivo se na vsakem framu zmanjša za dt * hitrost * konstantna (ki pove, koliko
 Za bolj tekoče premikanje letala, kot tudi kamere za njim, linearno interpoliramo rotacije, tako kamere, kot tudi letala, s tem da je rotacija kamere malce hitrejša. Poleg tega pa interpoliramo tudi offset kamere za letalom. 
 \subsection{Stanje igre}%done
 Za lažjo implementacijo logike igre, smo dodali enume stanja igre (ker jih Javascript direktno ne podpira, smo to implementirali rahlo drugače). Stanja so lahko igrano, pavzirano, konec igre ali začetek. 
+<<<<<<< HEAD
 \subsection{Naključno generiranje}%done
 V igri se na naključnih mestih naključno generirajo tako žetoni, kot oblaki. Poleg tega pa imajo oblaki naključno skaliranje in pa smer premikanja. Pri generiranju žetonov, preverimo, ali se je slučajno zgeneriral znotraj otoka in če se je ponovno pokličemo funkcijo za generiranje žetona, tega pa izbrišemo.
+=======
+>>>>>>> a3e25ab5ae48a05bc5b114d1f26c1c95b2ab919f
 
 \section{Zaključki in možne nadgradnje} %done
 Pri izdelavi smo v praksi utrdili teorijo iz predavanj, se naučili uporabe WebGL-a in senčilnikov, naučili osnove Blenderja ter nadgradili znanje JavaScripta in gita. Predviden scenarij smo uspeli izvesti v celoti, igra pa se v naslednjem projeku v Unityju lahko še nadgradi, doda več objektov (morda nasprotnikov) in predvsem izboljša fizika letenja. Težave so se pojavljale pri kombiniranju logike oz. fizike sveta z glTF objekti. Koristilo bi, da bi na vajah naredili več primerov premikanja ipd. na dejanskih glTF objektih, ne le na preprostih kockastih modelih. 
