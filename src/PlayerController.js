@@ -58,7 +58,7 @@ export class PlayerController {
         // translation. If there is no user input, speed will decay.
         // The model needs some limits and parameters.
         // Acceleration in units per second squared.
-        this.acceleration = 28;
+        this.acceleration = 43;
         this.airdrag = 5;
         // Maximum speed in units per second.
         this.MIN_SPEED = 100;
@@ -142,7 +142,7 @@ export class PlayerController {
         const acc = vec3.create();
         if (this.keys['Space']) {
             const wForward = vec3.clone(forward);
-            vec3.scale(wForward, forward, 0.4);
+            vec3.scale(wForward, forward, 0.3);
             vec3.add(acc, acc, wForward);
         }
         if (this.keys['KeyW']) {
@@ -223,7 +223,6 @@ export class PlayerController {
         const timeDelta = this.playtime - this.lastTimeFps;
         if (timeDelta > 0.5) {
             this.fps = this.frames * 2;
-            // console.log(this.frames * 5)
             this.frames = 0;
             this.lastTimeFps = this.playtime;
         }
@@ -250,10 +249,12 @@ export class PlayerController {
     pointermoveHandler(e) {
         // Horizontal pointer movement causes camera panning (y-rotation),
         // vertical pointer movement causes camera tilting (x-rotation).
-        const dx = Math.min(Math.abs(e.movementX), 10) * Math.sign(e.movementX);
-        const dy = Math.min(Math.abs(e.movementY), 10) * Math.sign(e.movementY);
-        this.eulerRotation[2] -= dy * this.pointerSensitivity;
 
+        const dx = Math.min(Math.abs(e.movementX), 12) * Math.sign(e.movementX);
+        const dy = Math.min(Math.abs(e.movementY), 12) * Math.sign(e.movementY);
+
+        this.eulerRotation[2] -= dy * this.pointerSensitivity;
+        this.turningX += Math.sign(dx) * 0.125
         // quat.rotateZ(airplaneRotation, airplaneRotation, this.eulerRotation[2]);
         // quat.slerp(airplaneRotation, airplaneRotation, this.airplaneNode.rotation, slerpValue);
         if(this.eulerRotation[2] > Math.PI/2 && this.eulerRotation[2] < Math.PI / 2 * 3) {
