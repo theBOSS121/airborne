@@ -168,6 +168,7 @@ export class PlayerController {
             }
             this.turningX += 0.125; // rotate the airplane around X axis when turning left and right to simulate real life turning
         }
+        this.eulerRotation[2] = ((this.eulerRotation[2]) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
 
         // acceleration
         vec3.add(acc, acc, forward);
@@ -256,16 +257,16 @@ export class PlayerController {
         // quat.rotateZ(airplaneRotation, airplaneRotation, this.eulerRotation[2]);
         // quat.slerp(airplaneRotation, airplaneRotation, this.airplaneNode.rotation, slerpValue);
         if(this.eulerRotation[2] > Math.PI/2 && this.eulerRotation[2] < Math.PI / 2 * 3) {
-            // this.eulerRotation[1]  += dx * this.pointerSensitivity;
+            this.eulerRotation[1]  += dx * this.pointerSensitivity;
         }else {
-            // this.eulerRotation[1]  -= dx * this.pointerSensitivity;
+            this.eulerRotation[1]  -= dx * this.pointerSensitivity;
         }
         // Limit pitch so that the camera does not invert on itself.
         // if (this.eulerRotation[0] > Math.PI / 2) this.eulerRotation[0] = Math.PI / 2;
         // if (this.eulerRotation[0] < -Math.PI / 2) this.eulerRotation[0] = -Math.PI / 2;
         // Constrain yaw to the range [0, pi * 2]
         // this.eulerRotation[1] = (this.eulerRotation[1]) % (Math.PI * 2);
-        // this.eulerRotation[2] = ((this.eulerRotation[2]) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        this.eulerRotation[2] = ((this.eulerRotation[2]) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
 
         this.lastTimePointerMoveHandler = this.playtime;
     }
