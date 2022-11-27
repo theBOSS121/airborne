@@ -66,7 +66,7 @@ export class FuelController {
             ior : 0,
         });
         this.fuels.push(fuel);
-        fuel.nodes[0].scale = [2, 2, 2];
+        fuel.nodes[0].scale = [3, 3, 3];
         this.renderer.prepareGLTFNodes(fuel);
         // fuel.nodes[0].createBoundingBox(this.cube, this.grass);
         fuel.itisfuckingstupid = 'fuel'
