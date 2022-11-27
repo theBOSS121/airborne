@@ -74,7 +74,7 @@ a.back:hover {
 
 .game-container {
     position: absolute;
-    z-index: 1;
+    z-index: 2;
     background-color: rgba(0, 0, 0, 0.4);
     display: none;
     align-items: center;
@@ -129,7 +129,7 @@ a.back:hover {
 
 .fuelbar {
     position: absolute;
-    z-index: 2;
+    z-index: 1;
     height: 20px;
     width: 75%;
     background-color: #ffc83c;
@@ -150,7 +150,7 @@ a.back:hover {
 }
 
 .playtime {
-    color: #c00404;
+    color: #ffc83c;
     font-size: 14px;
 }
 
@@ -164,7 +164,7 @@ a.back:hover {
 }
 #score-p span {
     font-size: 30px;
-    color: #c00404;
+    color: #ffc83c;
 }
 
 .fps {
