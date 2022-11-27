@@ -58,7 +58,7 @@ export class PlayerController {
         // translation. If there is no user input, speed will decay.
         // The model needs some limits and parameters.
         // Acceleration in units per second squared.
-        this.acceleration = 50;
+        this.acceleration = 43;
         this.airdrag = 5;
         // Maximum speed in units per second.
         this.MIN_SPEED = 100;
@@ -142,7 +142,7 @@ export class PlayerController {
         const acc = vec3.create();
         if (this.keys['Space']) {
             const wForward = vec3.clone(forward);
-            vec3.scale(wForward, forward, 0.4);
+            vec3.scale(wForward, forward, 0.3);
             vec3.add(acc, acc, wForward);
         }
         if (this.keys['KeyW']) {
