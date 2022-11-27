@@ -262,7 +262,6 @@ export class PlayerController {
         }else {
             this.eulerRotation[1]  -= dx * this.pointerSensitivity;
         }
-        this.turningX += Math.sign(dx)*0.125;
         // Limit pitch so that the camera does not invert on itself.
         // if (this.eulerRotation[0] > Math.PI / 2) this.eulerRotation[0] = Math.PI / 2;
         // if (this.eulerRotation[0] < -Math.PI / 2) this.eulerRotation[0] = -Math.PI / 2;
