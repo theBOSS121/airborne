@@ -68,7 +68,7 @@ export class PlayerController {
         // Decay as 1 - log percent max speed loss per second.
         this.decay = 0.9935;
         // Pointer sensitivity in radians per pixel.
-        this.pointerSensitivity = 0.002;
+        this.pointerSensitivity = 0.003;
         this.initHandlers();
         this.oldQRotation = this.cameraNode.rotation;
     }
@@ -105,7 +105,7 @@ export class PlayerController {
 
     updateFuel(dt) {
         const speed = vec3.len(this.airplaneNode.velocity); // returns square root of the sum of squares
-        this.fuel -= dt * speed * this.fuelPerUnits
+        // this.fuel -= dt * speed * this.fuelPerUnits
         if (this.fuel <= 0) {
             app.gameOver();
         } else if (this.fuel > 1) {
@@ -168,6 +168,7 @@ export class PlayerController {
             }
             this.turningX += 0.125; // rotate the airplane around X axis when turning left and right to simulate real life turning
         }
+        this.eulerRotation[2] = ((this.eulerRotation[2]) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
 
         // acceleration
         vec3.add(acc, acc, forward);
@@ -256,16 +257,16 @@ export class PlayerController {
         // quat.rotateZ(airplaneRotation, airplaneRotation, this.eulerRotation[2]);
         // quat.slerp(airplaneRotation, airplaneRotation, this.airplaneNode.rotation, slerpValue);
         if(this.eulerRotation[2] > Math.PI/2 && this.eulerRotation[2] < Math.PI / 2 * 3) {
-            // this.eulerRotation[1]  += dx * this.pointerSensitivity;
+            this.eulerRotation[1]  += dx * this.pointerSensitivity;
         }else {
-            // this.eulerRotation[1]  -= dx * this.pointerSensitivity;
+            this.eulerRotation[1]  -= dx * this.pointerSensitivity;
         }
         // Limit pitch so that the camera does not invert on itself.
         // if (this.eulerRotation[0] > Math.PI / 2) this.eulerRotation[0] = Math.PI / 2;
         // if (this.eulerRotation[0] < -Math.PI / 2) this.eulerRotation[0] = -Math.PI / 2;
         // Constrain yaw to the range [0, pi * 2]
         // this.eulerRotation[1] = (this.eulerRotation[1]) % (Math.PI * 2);
-        // this.eulerRotation[2] = ((this.eulerRotation[2]) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        this.eulerRotation[2] = ((this.eulerRotation[2]) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
 
         this.lastTimePointerMoveHandler = this.playtime;
     }

@@ -20,6 +20,7 @@ export class CloudController {
         for (let cloud of this.clouds.children) {
             const x = cloud.nodes[0].translation[0];
             const z = cloud.nodes[0].translation[2];
+
             if(x < -200) {
                 cloud.nodes[0].translation[0] = -200;
                 cloud.nodes[0].velocity[0] *= -1;

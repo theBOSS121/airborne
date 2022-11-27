@@ -17,7 +17,7 @@
 \title{POROČILO IZDELAVE IGRE - AIRBORNE \\
  Računalniška grafika in tehnologija iger, FRI 2022}
 
-\author{Luka Uranič$^{1}$, Alen Kurtagić$^{1}$,  Ana Maurič$^{1}$,  Anja Jerala$^{2}$,  Nika Priimek$^{2}$} % use ^1, ^2 for author(s) from different institutions
+\author{Luka Uranič$^{1} (63200035)$, Alen Kurtagić$^{1} (04200012)$,  Ana Maurič$^{1} (64190013)$, \\ Anja Jerala$^{2}$,  Nika Črne$^{2}$} % use ^1, ^2 for author(s) from different institutions
 
 \affiliation{	$^{1}$Univerza v Ljubljani, Fakulteta za računalništvo in informatiko \\ 
 				$^{2}$Univerza v Ljubljani, Naravoslovnotehniška fakuteta}
@@ -36,7 +36,7 @@ Airborne je letalska igra, narejena v WebGL-ju. Idejo za igro je v tej skupini p
 \end{abstract}
 
 \section{Pregled igre}%done
-Igra Airborne je letalska igra iz perspektive 3. osebe. Igralec oz. pilot usmerja letalo, s katerim poskuša nabrati žetone, ki mu povečujejo količino goriva. Igre je konec, ko se letalo zaleti v ovire v svetu ali pa ko mu zmanjka goriva. Igralec mora biti dovolj spreten, da se približa žetonom in jih pobere, brez da se zaleti v ovire, ki so postavljene blizu žetona, medtem ko letala ne more ustaviti, le usmerja po xyz osi sveta - zato je zahtevnost igre po naši oceni srednja, medium zahtevnost. Namenjena je vsem, ki si jo želijo igrati, tako izkušeni igralci kot tudi začetniki. Letalo se nahaja v zraku, okrog njega porazdeljeno po svetu so lebdeči otoki, oblaki in zlati žetoni, v ozadju je sončno obzorje. Cilj igre je preživeti oz. leteti čim dlje časa, pobrati čim več žetonov. Igralec lahko raziskuje svet po vseh smereh neba.
+Igra Airborne je letalska igra iz perspektive 3. osebe. Igralec oz. pilot usmerja letalo, s katerim poskuša nabrati žetone, ki mu povečujejo količino goriva. Igre je konec, ko se letalo zaleti v ovire v svetu ali pa ko mu zmanjka goriva. Igralec mora biti dovolj spreten, da se približa žetonom in jih pobere, brez da se zaleti v ovire, ki so postavljene blizu žetona, medtem ko letala ne more ustaviti, le usmerja po xyz osi sveta - zato je zahtevnost igre srednje zahtevnosti. Namenjena je vsem, ki si jo želijo igrati, tako izkušeni igralci kot tudi začetniki. Letalo se nahaja v zraku, okrog njega porazdeljeno po svetu so lebdeči otoki, oblaki in zlati žetoni, v ozadju je sončno obzorje. Cilj igre je preživeti oz. leteti čim dlje časa, pobrati čim več žetonov. Igralec lahko raziskuje svet po vseh smereh neba.
 
 \subsection{Opis sveta}%done
 Naš 3D svet je upodobljen s preprostimi (low-poly) 3D modeli, vendar je njegova podoba še zmeraj realistična. Rdeče letalo se vedno nahaja v sredini zaslona, svet se okoli njega razteza v vse tri xyz dimenzije. Letalo se lahko premika kamorkoli po teh smereh. Svet vsebuje še rjave lebdeče otoke, na katerih rastejo zelena drevesa, zlate žetone okoli teh otokov in bele oblake na nebu. V daljavi v neskončnosti se vidi sončno obzorje. Tla so črna.
@@ -45,10 +45,10 @@ Naš 3D svet je upodobljen s preprostimi (low-poly) 3D modeli, vendar je njegova
 Glaven model v svetu je letalo. Letalo vidi iz 3. perspektive, nahaja se malo za njim, da ima pregled nad vsem okoljem pred in ob letalu. Igralec in letalo se ves čas igre nahajata na sredini zaslona. Z pilotiranjem letala se igralec potem obrača naokoli, se približuje in oddaljuje otokom, žetonom, oblakom in ozdaju. 
 
 \subsubsection{Ozadje}%done
-Ozadje sestoji iz neba in daljave. Igralec lahko zapusti območje lebdečih otokov in leti proti obzorju, ampak ga ne more doseči, ker se razteza v neskončnost in ker mu bo hitro zmanjkalo goriva. Za takšno ozadje smo se odločili, da se poskusimo vizualno čim bolj približati dejanskemu razgledu, ki ga vidijo piloti. Nasploh z ozadjem igralec ne more interaktirati, razen seveda če se namerno zaleti v tla.
+Ozadje sestoji iz neba in daljave. Igralec lahko zapusti območje lebdečih otokov in leti proti obzorju, ampak ga ne more doseči, ker se razteza v neskončnost in ker mu bo hitro zmanjkalo goriva. Za takšno ozadje smo se odločili, da se poskusimo vizualno čim bolj približati dejanskemu razgledu, ki ga vidijo piloti.
 
 \subsubsection{Ključne lokacije}%done
-Ključna lokacija v svetu je sredina, kjer se nahaja 10 lebdečih otokov. Samo na tej lokaciji lahko igralec najde žetone, za letalo predtavlja nahajališče dobrin, ostalo je samo ozadje - kot je podrobneje opisano v prejšnjem razdelku, to sta ne-interaktivno sončno obzorje in tla.
+Ključna lokacija v svetu je sredina, kjer se nahaja 10 lebdečih otokov. Samo na tej lokaciji lahko igralec najde žetone, za letalo predstavlja nahajališče dobrin, ostalo je samo ozadje - kot je podrobneje opisano v prejšnjem razdelku, to sta ne-interaktivno sončno obzorje in tla.
 
 \subsubsection{Velikost}%done
 Svet je velik, zajeta je pravzaprav cela atmosfera po kateri letijo realna letala. Razširja se v neskončnost levo, desno, naprej, nazaj, gor in dol. Na ta svet gledamo iz 3. perspektive, da si ga lahko v celoti ogledamo in obiščemo. 
@@ -107,6 +107,10 @@ Ko se igra zažene, se na zaslonu izpiše: "LEFT CLICK TO START". Takoj, ko igra
 \begin{center}
      \includegraphics[width=\columnwidth]{game over.jpg}
 \end{center}
+
+\section{Tehnični vidiki igre} %done
+\subsubsection{Izris prozornih objektov}%done
+Pri izrisu prozornih objektov je pomembno, da jih izrišemo za neprozornimi objekti in urejene po bližini od kamere (najbližje najkasneje)
 
 \section{Zaključki in možne nadgradnje} %done
 Pri izdelavi smo v praksi utrdili teorijo iz predavanj, se naučili uporabe WebGL-a, nadgradili znanje JavaScripta in Githuba. Predviden scenarij smo uspeli izvesti v celoti, igra pa se v naslednjem projeku v Unityju lahko še nadgradi, doda več objektov, izboljša izgled in animacijo. Težave so se pojavljale pri kombiniranju logike oz. fizike sveta z gltf objekti. Koristilo bi, da bi na vajah naredili več primerov premikanja ipd. na dejanskih Gltf objektih, ne le na preprostih kockastih modelih.
