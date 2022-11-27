@@ -152,12 +152,20 @@ export class PlayerController {
             this.eulerRotation[2] -= 0.01;
         } 
         if (this.keys['KeyA']) {
-            this.eulerRotation[1] += 0.01;
+            if(this.eulerRotation[2] > Math.PI/2 && this.eulerRotation[2] < Math.PI / 2 * 3) {
+                this.eulerRotation[1] -= 0.01;
+            }else {
+                this.eulerRotation[1] += 0.01;
+            }
             this.turningX -= 0.125; // rotate the airplane around X axis when turning left and right to simulate real life turning
 
         } 
         if (this.keys['KeyD']) {
-            this.eulerRotation[1] -= 0.01;
+            if(this.eulerRotation[2] > Math.PI/2 && this.eulerRotation[2] < Math.PI / 2 * 3) {
+                this.eulerRotation[1] += 0.01;
+            }else {
+                this.eulerRotation[1] -= 0.01;
+            }
             this.turningX += 0.125; // rotate the airplane around X axis when turning left and right to simulate real life turning
         }
 
