@@ -58,7 +58,7 @@ export class PlayerController {
         // translation. If there is no user input, speed will decay.
         // The model needs some limits and parameters.
         // Acceleration in units per second squared.
-        this.acceleration = 28;
+        this.acceleration = 50;
         this.airdrag = 5;
         // Maximum speed in units per second.
         this.MIN_SPEED = 100;
@@ -223,7 +223,6 @@ export class PlayerController {
         const timeDelta = this.playtime - this.lastTimeFps;
         if (timeDelta > 0.5) {
             this.fps = this.frames * 2;
-            // console.log(this.frames * 5)
             this.frames = 0;
             this.lastTimeFps = this.playtime;
         }
